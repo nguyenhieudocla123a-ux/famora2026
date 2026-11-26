@@ -1,0 +1,25 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Backend (Maven)
+backend/target/
+backend/uploads/
+
+# Mobile (React Native)
+mobile/node_modules/
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/build/
+mobile/ios/Pods/
+mobile/ios/build/
+*.keystore
+!debug.keystore
