@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FamilyHub · Icons & motifs</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Playfair+Display:wght@600&display=swap&subset=vietnamese" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+body{font-family:var(--font-body);color:var(--on-surface);background:var(--bg);padding:36px 28px 80px;max-width:960px;margin:0 auto}
+h1{font:600 30px var(--font-display);color:var(--primary-ink)}
+h2{font:600 20px var(--font-display);color:var(--primary-ink);margin:32px 0 12px}
+.lede{color:var(--muted);font-size:15px;margin:8px 0 24px;line-height:1.7;max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+.tile{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--elev-1);padding:16px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--on-surface)}
+.tile .name{font:11px var(--font-mono);color:var(--muted)}
+.motifs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.motifs .tile{padding:20px;color:var(--primary)}
+</style>
+</head>
+<body>
+<!--SPRITE:START-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- hồi văn (Vietnamese fret) — tiled along the bottom of the jade band -->
+    <pattern id="p-fret" width="24" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 9H5V1H17V7H9V4H13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+      <path d="M17 9H24" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+  <!-- ===== UI icons: rounded outline, drawn in the style of Lucide/Feather (MIT) ===== -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-more-v" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-cake" viewBox="0 0 24 24"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20M7 8v3M12 8v3M17 8v3M7 4h.01M12 4h.01M17 4h.01"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21l1.2-6.9-5-4.9 6.9-1z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+  <symbol id="i-volume-x" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></symbol>
+
+  <!-- ===== Vietnamese motifs (decorative: aria-hidden, never carry information) ===== -->
+  <!-- mây lành (auspicious cloud) -->
+  <symbol id="m-cloud" viewBox="0 0 120 44"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    <path d="M6 38c3-10 15-13 21-6 1-10 15-15 23-8 5-9 21-8 24 3 9-3 17 3 16 11"/>
+    <path d="M27 32c4 3 1 9-3 7-3-1-2-5 1-5"/><path d="M50 24c5 2 3 9-2 8-4-1-3-6 0-6"/><path d="M74 27c4 3 1 8-3 7-3-1-2-5 1-4"/>
+    <path d="M90 38c6 0 14-2 22 2"/></g></symbol>
+  <!-- mặt trống đồng (Đông Sơn bronze-drum sun, 14 rays) -->
+  <symbol id="m-drum" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="1"><circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="42"/><circle cx="50" cy="50" r="37"/><circle cx="50" cy="50" r="29"/>
+    <path d="M81.0 50.0L85.0 50.0M80.5 55.4L84.5 56.1M79.1 60.6L82.9 62.0M76.8 65.5L80.3 67.5M73.7 69.9L76.8 72.5M69.9 73.7L72.5 76.8M65.5 76.8L67.5 80.3M60.6 79.1L62.0 82.9M55.4 80.5L56.1 84.5M50.0 81.0L50.0 85.0M44.6 80.5L43.9 84.5M39.4 79.1L38.0 82.9M34.5 76.8L32.5 80.3M30.1 73.7L27.5 76.8M26.3 69.9L23.2 72.5M23.2 65.5L19.7 67.5M20.9 60.6L17.1 62.0M19.5 55.4L15.5 56.1M19.0 50.0L15.0 50.0M19.5 44.6L15.5 43.9M20.9 39.4L17.1 38.0M23.2 34.5L19.7 32.5M26.3 30.1L23.2 27.5M30.1 26.3L27.5 23.2M34.5 23.2L32.5 19.7M39.4 20.9L38.0 17.1M44.6 19.5L43.9 15.5M50.0 19.0L50.0 15.0M55.4 19.5L56.1 15.5M60.6 20.9L62.0 17.1M65.5 23.2L67.5 19.7M69.9 26.3L72.5 23.2M73.7 30.1L76.8 27.5M76.8 34.5L80.3 32.5M79.1 39.4L82.9 38.0M80.5 44.6L84.5 43.9"/></g>
+    <path fill="currentColor" d="M50.0 26.0L51.6 43.2L60.4 28.4L54.4 44.5L68.8 35.0L56.3 47.0L73.4 44.7L57.0 50.0L73.4 55.3L56.3 53.0L68.8 65.0L54.4 55.5L60.4 71.6L51.6 56.8L50.0 74.0L48.4 56.8L39.6 71.6L45.6 55.5L31.2 65.0L43.7 53.0L26.6 55.3L43.0 50.0L26.6 44.7L43.7 47.0L31.2 35.0L45.6 44.5L39.6 28.4L48.4 43.2Z"/></symbol>
+  <!-- hoa sen (lotus) -->
+  <symbol id="m-lotus" viewBox="0 0 100 90"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z"/>
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z" transform="rotate(-32 50 72)"/>
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z" transform="rotate(32 50 72)"/>
+    <path d="M50 72C40 58 41 44 47 34" transform="rotate(-62 50 72)"/>
+    <path d="M50 72C60 58 59 44 53 34" transform="rotate(62 50 72)"/>
+    <path d="M22 76Q50 88 78 76"/></g></symbol>
+  <!-- hoa mai (yellow apricot blossom, Tết) -->
+  <symbol id="m-mai" viewBox="0 0 24 24"><g fill="currentColor"><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="2.4" fill="#9E3B2E"/></symbol>
+</svg>
+<!--SPRITE:END-->
+
+<h1>Icons & họa tiết</h1>
+<p class="lede">UI icons are a rounded outline set drawn in the style of Lucide/Feather (MIT), themed by <code>--icon-stroke</code> and <code>currentColor</code>. Vietnamese motifs are decorative only (hidden from screen readers) and never carry meaning: mây lành, mặt trống đồng, hoa sen, hoa mai and the hồi văn fret. Never emoji.</p>
+<h2>UI icons</h2>
+<div class="grid" id="g"></div>
+<h2>Họa tiết (motifs)</h2>
+<div class="motifs">
+  <div class="tile"><svg width="180" height="66" class="m-drift"><use href="#m-cloud"/></svg><div class="name">m-cloud · mây lành</div></div>
+  <div class="tile"><svg width="110" height="110" class="m-spin"><use href="#m-drum"/></svg><div class="name">m-drum · trống đồng</div></div>
+  <div class="tile"><svg width="110" height="100" class="m-bloom" style="color:var(--secondary)"><use href="#m-lotus"/></svg><div class="name">m-lotus · hoa sen</div></div>
+  <div class="tile"><svg width="60" height="60" style="color:var(--accent)"><use href="#m-mai"/></svg><div class="name">m-mai · hoa mai</div></div>
+  <div class="tile"><svg width="180" height="12" style="color:var(--accent)"><rect width="180" height="12" fill="url(#p-fret)"/></svg><div class="name">p-fret · hồi văn</div></div>
+</div>
+<script>
+const I=['home','calendar','users','user','user-plus','bell','search','menu','settings','back','chevron-left','chevron-right','chevron-down','close','check','minus','plus','more-v','edit','trash','share','copy','clock','map-pin','moon','sun','repeat','flame','cake','heart','star','flag','gift','info','alert','check-circle','x-circle','lock','mail','key','log-out','camera','eye','filter'];
+g.innerHTML=I.map(n=>`<div class="tile"><svg class="ico ico--lg"><use href="#i-${n}"/></svg><div class="name">i-${n}</div></div>`).join('');
+</script>
+</body>
+</html>

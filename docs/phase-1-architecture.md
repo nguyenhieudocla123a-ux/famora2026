@@ -99,7 +99,7 @@ flowchart LR
         N --> BRK[STOMP simple broker]
     end
 
-    R --> DB[(SQL Server)]
+    R --> DB[(PostgreSQL)]
     S --> RD[(Redis)]
     S --> FS[(File storage - avatar)]
 ```
@@ -112,8 +112,8 @@ flowchart LR
 | Đăng xuất | Thu hồi refresh token; jti của access token đưa vào Redis blacklist đến khi hết hạn | Đăng xuất có hiệu lực ngay, không phải đợi 15 phút. |
 | Phân quyền | Role nằm ở `family_members` (không ở `users`). Kiểm tra bằng `FamilyAccessService` + `@PreAuthorize("@familyAccess.hasRole(#familyId, 'ADMIN')")` | Resource-based authorization; một người có vai trò khác nhau ở mỗi gia đình. |
 | Chống IDOR | Mọi truy vấn tài nguyên con đều kèm `familyId`: `findByIdAndFamilyId(eventId, familyId)`; không tìm thấy → **404** (không lộ sự tồn tại) | Ngăn đoán `eventId` của gia đình khác. |
-| Thời gian | Thời điểm (`created_at`, `fire_at`) lưu `DATETIME2` **UTC**; ngày sự kiện lưu `DATE` (không có giờ); mọi tính toán "hôm nay" dùng `ZoneId.of("Asia/Ho_Chi_Minh")` qua một `Clock` bean | `Clock` cho phép test giả lập thời gian. |
-| Khóa chính | `BIGINT IDENTITY` nội bộ; API dùng id số (luôn kèm kiểm tra quyền) | Đơn giản, index hiệu quả trên SQL Server. Phương án UUID được cân nhắc nhưng không cần vì đã chống IDOR bằng kiểm quyền. |
+| Thời gian | Thời điểm (`created_at`, `fire_at`) lưu `TIMESTAMPTZ` (luôn ở **UTC**); ngày sự kiện lưu `DATE` (không có giờ); mọi tính toán "hôm nay" dùng `ZoneId.of("Asia/Ho_Chi_Minh")` qua một `Clock` bean | `Clock` cho phép test giả lập thời gian. |
+| Khóa chính | `BIGINT GENERATED ALWAYS AS IDENTITY` nội bộ; API dùng id số (luôn kèm kiểm tra quyền) | Đơn giản, index B-tree hiệu quả trên PostgreSQL. Phương án UUID được cân nhắc nhưng không cần vì đã chống IDOR bằng kiểm quyền. |
 | Mapping | MapStruct; Entity không bao giờ ra khỏi tầng service | Đúng yêu cầu DTO. |
 | Lỗi | `@RestControllerAdvice` trả chuẩn **RFC 7807 `ProblemDetail`** (Spring 6 có sẵn) + mã lỗi nghiệp vụ | Chuẩn hóa, không tự chế format. |
 | Redis | (1) blacklist access token, (2) rate limit đăng nhập & nhập mã mời (chống brute-force), (3) cache dữ liệu âm lịch theo tháng | Mỗi lần dùng Redis đều có lý do cụ thể. |
@@ -167,7 +167,7 @@ So với phương án "mỗi phút tính lại tất cả": dễ quan sát (xem 
 Rủi ro đa instance: hai server cùng chạy dispatcher → MVP chạy 1 instance; Phase 9 thêm **ShedLock** (khóa qua DB) hoặc `UPDATE ... WHERE status='PENDING'` có điều kiện.
 
 ### 5.4. Bảo toàn quyền OWNER
-- Mỗi gia đình **đúng một** OWNER đang hoạt động: *filtered unique index* trên SQL Server `UNIQUE(family_id) WHERE role='OWNER' AND status='ACTIVE'`.
+- Mỗi gia đình **đúng một** OWNER đang hoạt động: *partial unique index* trên PostgreSQL `UNIQUE(family_id) WHERE role='OWNER' AND status='ACTIVE'`.
 - OWNER không thể rời gia đình khi chưa chuyển quyền; không ai đổi được vai trò của OWNER; ADMIN không thể nâng ai lên OWNER hay hạ ADMIN khác.
 - Chuyển quyền OWNER thực hiện trong **một transaction** (hạ OWNER cũ → nâng người mới).
 
@@ -207,34 +207,34 @@ erDiagram
 
     users {
         bigint id PK
-        nvarchar email UK
+        varchar email UK
         varchar password_hash
-        nvarchar full_name
+        varchar full_name
         date date_of_birth
         varchar avatar_url
         varchar status "ACTIVE|LOCKED|DELETED"
-        datetime2 created_at
-        datetime2 updated_at
+        timestamptz created_at
+        timestamptz updated_at
     }
     refresh_tokens {
         bigint id PK
         bigint user_id FK
         char token_hash UK "SHA-256"
         uuid token_family "phát hiện reuse"
-        datetime2 expires_at
-        datetime2 revoked_at
+        timestamptz expires_at
+        timestamptz revoked_at
         bigint replaced_by_id
     }
     families {
         bigint id PK
-        nvarchar name
-        nvarchar description
+        varchar name
+        varchar description
         varchar avatar_url
-        bit member_can_create_events
+        boolean member_can_create_events
         bigint created_by FK
-        datetime2 deleted_at "soft delete"
-        datetime2 created_at
-        datetime2 updated_at
+        timestamptz deleted_at "soft delete"
+        timestamptz created_at
+        timestamptz updated_at
     }
     family_members {
         bigint id PK
@@ -242,9 +242,9 @@ erDiagram
         bigint user_id FK
         varchar role "OWNER|ADMIN|MEMBER"
         varchar status "ACTIVE|LEFT|REMOVED"
-        nvarchar nickname "VD: Bố, Bà nội"
-        datetime2 joined_at
-        datetime2 left_at
+        varchar nickname "VD: Bố, Bà nội"
+        timestamptz joined_at
+        timestamptz left_at
     }
     family_invitations {
         bigint id PK
@@ -253,8 +253,8 @@ erDiagram
         varchar default_role "ADMIN|MEMBER"
         int max_uses
         int used_count
-        datetime2 expires_at
-        datetime2 revoked_at
+        timestamptz expires_at
+        timestamptz revoked_at
         bigint created_by FK
         int version "optimistic lock"
     }
@@ -262,34 +262,34 @@ erDiagram
         bigint id PK
         bigint family_id FK
         bigint member_id FK "nullable, unique"
-        nvarchar full_name
+        varchar full_name
         varchar gender
         date birth_date_solar
-        bit is_deceased
+        boolean is_deceased
         date death_date_solar
         smallint death_lunar_day
         smallint death_lunar_month
-        bit death_lunar_leap
-        datetime2 deleted_at
+        boolean death_lunar_leap
+        timestamptz deleted_at
     }
     family_events {
         bigint id PK
         bigint family_id FK
         bigint created_by FK
         varchar type "BIRTHDAY|DEATH_ANNIVERSARY|..."
-        nvarchar title
-        nvarchar description
-        nvarchar location
+        varchar title
+        varchar description
+        varchar location
         varchar calendar_type "SOLAR|LUNAR"
         date solar_date "ngày gốc dương"
         smallint lunar_day
         smallint lunar_month
         int lunar_year
-        bit lunar_leap_month
+        boolean lunar_leap_month
         time start_time "nullable = cả ngày"
         varchar recurrence "NONE|YEARLY"
         varchar status "ACTIVE|CANCELLED"
-        datetime2 deleted_at
+        timestamptz deleted_at
         int version
     }
     event_persons {
@@ -309,7 +309,7 @@ erDiagram
         bigint user_id FK
         date occurrence_date
         smallint offset_days
-        datetime2 fire_at "UTC"
+        timestamptz fire_at "UTC"
         varchar status "PENDING|SENT|CANCELLED"
     }
     notifications {
@@ -317,20 +317,20 @@ erDiagram
         bigint user_id FK
         bigint family_id FK
         varchar type
-        nvarchar title
-        nvarchar body
+        varchar title
+        varchar body
         varchar ref_type
         bigint ref_id
-        datetime2 read_at
-        datetime2 created_at
+        timestamptz read_at
+        timestamptz created_at
     }
     holidays {
         int id PK
-        nvarchar name
+        varchar name
         varchar calendar_type
         smallint day
         smallint month
-        bit is_active
+        boolean is_active
     }
     event_participants {
         bigint event_id PK,FK
@@ -341,8 +341,8 @@ erDiagram
         bigint id PK
         bigint event_id FK
         bigint user_id FK
-        nvarchar content
-        datetime2 deleted_at
+        varchar content
+        timestamptz deleted_at
     }
 ```
 
@@ -350,9 +350,9 @@ erDiagram
 | Bảng | Ràng buộc / Index | Mục đích |
 |---|---|---|
 | `users` | `UNIQUE(email)` (email chuẩn hóa chữ thường) | Một email một tài khoản. |
-| `family_members` | `UNIQUE(family_id, user_id)`; filtered unique `(family_id) WHERE role='OWNER' AND status='ACTIVE'`; index `(user_id, status)` | Không trùng thành viên; đúng 1 OWNER; liệt kê gia đình của user nhanh. |
+| `family_members` | `UNIQUE(family_id, user_id)`; partial unique index `(family_id) WHERE role='OWNER' AND status='ACTIVE'`; index `(user_id, status)` | Không trùng thành viên; đúng 1 OWNER; liệt kê gia đình của user nhanh. |
 | `family_invitations` | `UNIQUE(code)`; `CHECK(used_count <= max_uses)` | Mã duy nhất, không vượt lượt. |
-| `family_persons` | filtered unique `(member_id) WHERE member_id IS NOT NULL` | Một thành viên ứng với tối đa một hồ sơ. |
+| `family_persons` | partial unique index `(member_id) WHERE member_id IS NOT NULL` | Một thành viên ứng với tối đa một hồ sơ. |
 | `family_events` | `CHECK` (SOLAR ⇒ `solar_date` NOT NULL; LUNAR ⇒ `lunar_day/month` NOT NULL, `lunar_day` 1..30, `lunar_month` 1..12); index `(family_id, recurrence, solar_date)` | Dữ liệu hợp lệ ở mức DB; truy vấn lịch theo khoảng. |
 | `event_reminders` | `UNIQUE(event_id, user_id, offset_days)` | Không trùng nhắc. |
 | `reminder_schedules` | `UNIQUE(event_id, user_id, occurrence_date, offset_days)`; index `(status, fire_at)` | **Idempotent**; dispatcher quét nhanh. |
@@ -464,7 +464,7 @@ famora2026/
 ├── backend/            Spring Boot (Maven)
 ├── mobile/             React Native CLI (TypeScript)
 ├── docs/               Thiết kế, ADR, API
-├── docker-compose.yml  SQL Server + Redis (dev)
+├── docker-compose.yml  PostgreSQL + Redis (dev)
 └── README.md
 ```
 
@@ -524,7 +524,7 @@ Thư viện đề xuất (đều có lý do): `@react-navigation/*`, `@reduxjs/t
 | 5 | **Âm lịch**, sự kiện, lặp lại, person, holiday | 2–3 tuần | Bộ test âm lịch biên + property test |
 | 6 | Reminder planner/dispatcher, notification, STOMP | 1.5 tuần | Test idempotent, test giờ VN với `Clock` giả |
 | 7 | Tích hợp mobile: Redux, Axios, auth flow, WebSocket | 2 tuần | Luồng end-to-end thật |
-| 8 | Testcontainers (SQL Server), tối ưu truy vấn, Redis | 1 tuần | Báo cáo coverage, log SQL không N+1 |
+| 8 | Testcontainers (PostgreSQL), tối ưu truy vấn, Redis | 1 tuần | Báo cáo coverage, log SQL không N+1 |
 | 9 | Docker, deploy backend + DB + Redis, build APK | 1 tuần | Link API public + APK |
 
 Tổng: ~14–15 tuần. Module 5 (Activities) làm sau Phase 9 hoặc chen vào sau Phase 6 nếu còn thời gian.

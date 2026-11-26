@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FamilyHub · Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,500&display=swap&subset=vietnamese" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js"}}</script>
+<style>
+/* style-guide chrome only; tokens + components live in styles.css */
+body{font-family:var(--font-body);color:var(--on-surface);background:var(--bg);display:flex}
+nav.side{position:sticky;top:0;align-self:flex-start;height:100vh;width:220px;flex:0 0 220px;background:var(--surface);border-right:1px solid var(--border);padding:22px 14px;overflow:auto}
+nav.side .brand{display:flex;align-items:center;gap:10px;font:600 20px var(--font-display);color:var(--primary-ink);margin-bottom:18px}
+nav.side .brand svg{color:var(--secondary)}
+nav.side a{display:block;padding:6px 10px;border-radius:8px;font-size:13px;color:var(--muted);text-decoration:none}
+nav.side a:hover{background:var(--bg);color:var(--primary-ink)}
+nav.side a.concept-link{margin:0 0 6px;padding:11px 12px;font-weight:600;color:var(--on-primary);background:var(--primary);border-radius:12px}
+nav.side a.concept-link:hover{background:var(--primary-strong);color:var(--on-primary)}
+nav.side .grp{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin:18px 0 6px 10px}
+main{flex:1;padding:36px 44px 140px;max-width:1080px;min-width:0}
+section{margin-bottom:56px;scroll-margin-top:20px}
+h2.sec{font:600 26px var(--font-display);color:var(--primary-ink);margin-bottom:6px}
+.sec-desc{color:var(--muted);font-size:15px;margin-bottom:20px;max-width:720px;line-height:1.6}
+.stage{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--elev-1);padding:26px;display:flex;flex-wrap:wrap;gap:28px;align-items:center}
+.stage.sunk{background:var(--bg);box-shadow:inset 0 0 0 1px var(--border)}
+.cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.cell.l{align-items:flex-start}
+.spec{font:11px var(--font-mono);color:var(--muted)}
+.colors{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.sw{border-radius:var(--r-md);overflow:hidden;background:var(--surface);box-shadow:var(--elev-1)}
+.sw .c{height:64px;display:flex;align-items:flex-end;padding:8px 10px;font:600 13px var(--font-body)}
+.sw .m{padding:8px 10px}.sw .n{font-size:12px;font-weight:600}.sw .v{font:11px var(--font-mono);color:var(--muted)}
+.grp-title{font:600 12px var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin:22px 0 10px}
+.typerow{display:flex;align-items:baseline;gap:18px;padding:12px 0;border-bottom:1px solid var(--border)}
+.typerow .tk{width:150px;flex:0 0 150px;font:11px var(--font-mono);color:var(--muted)}
+.sprow{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sprow .bar{background:var(--primary);height:12px;border-radius:3px}.sprow .lbl{width:190px;font:12px var(--font-mono);color:var(--muted)}
+.iconGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.iconGrid .it{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--elev-1);padding:14px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--on-surface)}
+.iconGrid .it .nm{font:10px var(--font-mono);color:var(--muted)}
+.phone{width:340px;background:var(--bg);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--elev-1);position:relative}
+.motionDemo{width:200px;height:120px;border-radius:var(--r-md);background:var(--bg);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+/* top controls + Dev Mode + Inspector + Copy-as-prompt */
+#topctl{position:fixed;top:16px;right:20px;z-index:80;display:flex;gap:10px;align-items:center}
+#langSel{font:600 12px var(--font-body);border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--muted)}
+.ds-btn{font:600 12px var(--font-body);background:var(--surface);border:1px solid var(--primary);color:var(--primary-ink);border-radius:8px;padding:8px 12px;cursor:pointer}
+.ds-btn:hover{background:var(--primary-container)}
+#devToggle{font:600 13px var(--font-body);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;color:var(--muted)}
+#devToggle.on{background:var(--primary);border-color:var(--primary-strong);color:var(--on-primary)}
+.sec-prompt{font:600 11px var(--font-body);border:1px solid var(--primary);background:var(--surface);color:var(--primary-ink);border-radius:8px;padding:3px 9px;margin-left:12px;cursor:pointer;vertical-align:middle}
+body.dev [data-insp]:hover{outline:2px dashed var(--accent);outline-offset:3px;cursor:pointer}
+.insp-sel{outline:2px solid var(--primary)!important;outline-offset:3px}
+#inspector{position:fixed;top:0;right:0;width:340px;height:100vh;background:var(--surface);border-left:1px solid var(--border);box-shadow:-8px 0 24px rgb(var(--shadow-ink)/.08);transform:translateX(100%);transition:transform .28s var(--ease);z-index:79;overflow:auto;padding:58px 20px 40px}
+body.inspecting #inspector{transform:translateX(0)}
+body.inspecting main{margin-right:340px}
+#inspector .iclose{position:absolute;top:16px;right:16px;border:none;background:none;font-size:18px;color:var(--muted);cursor:pointer}
+#inspector .nm{font:600 22px var(--font-display);color:var(--primary-ink)}
+#inspector .file{font:12px var(--font-mono);color:var(--muted);margin-top:2px}
+#inspector .desc{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px}
+#inspector h4{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent-ink);margin:20px 0 8px}
+.prop{padding:8px 0;border-bottom:1px solid var(--border-faint)}.prop .pn{font:600 13px var(--font-mono)}.prop .pt{font:11px var(--font-mono);color:var(--primary-ink)}.prop .pdef{font:11px var(--font-mono);color:var(--muted)}
+.tok{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer}.tok:hover{background:var(--bg)}
+.tok .tsw{width:22px;height:22px;border-radius:6px;border:1px solid var(--border);flex:0 0 22px}.tok .tn{font:600 12px var(--font-mono)}.tok .tr{font-size:11px;color:var(--muted)}.tok .tv{margin-left:auto;font:11px var(--font-mono);color:var(--muted)}
+.metric{display:flex;justify-content:space-between;font:12px var(--font-mono);padding:5px 0;border-bottom:1px dashed var(--border-faint)}.metric .mk{color:var(--muted)}
+.copyprompt{width:100%;margin-top:16px;font:600 13px var(--font-body);background:var(--primary);color:var(--on-primary);border:none;border-radius:10px;padding:11px;cursor:pointer}
+.copied{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--inverse-surface);color:var(--inverse-on-surface);font-size:12px;padding:8px 16px;border-radius:8px;opacity:0;transition:.2s;z-index:90;pointer-events:none}.copied.show{opacity:.95}
+</style>
+</head>
+<body>
+<!--SPRITE:START-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- hồi văn (Vietnamese fret) — tiled along the bottom of the red band -->
+    <pattern id="p-fret" width="24" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 9H5V1H17V7H9V4H13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+      <path d="M17 9H24" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+  <!-- ===== UI icons: rounded outline, drawn in the style of Lucide/Feather (MIT) ===== -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-more-v" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-cake" viewBox="0 0 24 24"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20M7 8v3M12 8v3M17 8v3M7 4h.01M12 4h.01M17 4h.01"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21l1.2-6.9-5-4.9 6.9-1z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+  <symbol id="i-volume-x" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></symbol>
+
+  <!-- ===== Vietnamese motifs (decorative: aria-hidden, never carry information) ===== -->
+  <!-- mây lành (auspicious cloud) -->
+  <symbol id="m-cloud" viewBox="0 0 120 44"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    <path d="M6 38c3-10 15-13 21-6 1-10 15-15 23-8 5-9 21-8 24 3 9-3 17 3 16 11"/>
+    <path d="M27 32c4 3 1 9-3 7-3-1-2-5 1-5"/><path d="M50 24c5 2 3 9-2 8-4-1-3-6 0-6"/><path d="M74 27c4 3 1 8-3 7-3-1-2-5 1-4"/>
+    <path d="M90 38c6 0 14-2 22 2"/></g></symbol>
+  <!-- mặt trống đồng (Đông Sơn bronze-drum sun, 14 rays) -->
+  <symbol id="m-drum" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="1"><circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="42"/><circle cx="50" cy="50" r="37"/><circle cx="50" cy="50" r="29"/>
+    <path d="M81.0 50.0L85.0 50.0M80.5 55.4L84.5 56.1M79.1 60.6L82.9 62.0M76.8 65.5L80.3 67.5M73.7 69.9L76.8 72.5M69.9 73.7L72.5 76.8M65.5 76.8L67.5 80.3M60.6 79.1L62.0 82.9M55.4 80.5L56.1 84.5M50.0 81.0L50.0 85.0M44.6 80.5L43.9 84.5M39.4 79.1L38.0 82.9M34.5 76.8L32.5 80.3M30.1 73.7L27.5 76.8M26.3 69.9L23.2 72.5M23.2 65.5L19.7 67.5M20.9 60.6L17.1 62.0M19.5 55.4L15.5 56.1M19.0 50.0L15.0 50.0M19.5 44.6L15.5 43.9M20.9 39.4L17.1 38.0M23.2 34.5L19.7 32.5M26.3 30.1L23.2 27.5M30.1 26.3L27.5 23.2M34.5 23.2L32.5 19.7M39.4 20.9L38.0 17.1M44.6 19.5L43.9 15.5M50.0 19.0L50.0 15.0M55.4 19.5L56.1 15.5M60.6 20.9L62.0 17.1M65.5 23.2L67.5 19.7M69.9 26.3L72.5 23.2M73.7 30.1L76.8 27.5M76.8 34.5L80.3 32.5M79.1 39.4L82.9 38.0M80.5 44.6L84.5 43.9"/></g>
+    <path fill="currentColor" d="M50.0 26.0L51.6 43.2L60.4 28.4L54.4 44.5L68.8 35.0L56.3 47.0L73.4 44.7L57.0 50.0L73.4 55.3L56.3 53.0L68.8 65.0L54.4 55.5L60.4 71.6L51.6 56.8L50.0 74.0L48.4 56.8L39.6 71.6L45.6 55.5L31.2 65.0L43.7 53.0L26.6 55.3L43.0 50.0L26.6 44.7L43.7 47.0L31.2 35.0L45.6 44.5L39.6 28.4L48.4 43.2Z"/></symbol>
+  <!-- hoa sen (deep red) -->
+  <symbol id="m-deep red" viewBox="0 0 100 90"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z"/>
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z" transform="rotate(-32 50 72)"/>
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z" transform="rotate(32 50 72)"/>
+    <path d="M50 72C40 58 41 44 47 34" transform="rotate(-62 50 72)"/>
+    <path d="M50 72C60 58 59 44 53 34" transform="rotate(62 50 72)"/>
+    <path d="M22 76Q50 88 78 76"/></g></symbol>
+  <!-- hoa mai (yellow apricot blossom, Tết) -->
+  <symbol id="m-mai" viewBox="0 0 24 24"><g fill="currentColor"><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="2.4" fill="#9E3B2E"/></symbol>
+</svg>
+<!--SPRITE:END-->
+
+<div id="topctl">
+  <button class="ds-btn" onclick="copyFullSystem()" title="Copy a prompt to install or update the whole design system">⤓ Install design system</button>
+  <select id="langSel" title="Copy-as-prompt target"></select>
+  <button id="devToggle" onclick="toggleDev()">◧ Dev Mode</button>
+</div>
+<aside id="inspector"><button class="iclose" onclick="closeInspector()">✕</button><div id="inspectorBody"></div></aside>
+<div class="copied" id="copied">Copied</div>
+
+<nav class="side">
+  <div class="brand"><svg width="30" height="27"><use href="#m-lotus"/></svg>FamilyHub</div>
+  <a class="concept-link" href="concept.html">◳ &nbsp;Concept preview &nbsp;→</a>
+  <div class="grp">Foundations</div>
+  <a href="#colors">Palette</a><a href="#typography">Typography</a><a href="#spacing">Spacing</a><a href="#shape">Shape</a><a href="#elevation">Shadows</a><a href="#motion">Transitions</a><a href="#icon">Icons & motifs</a>
+  <div class="grp">Inputs</div>
+  <a href="#button">Button</a><a href="#buttongroup">Button group</a><a href="#iconbutton">Icon button</a><a href="#fab">Floating action button</a><a href="#checkbox">Checkbox</a><a href="#radio">Radio group</a><a href="#switch">Switch</a><a href="#select">Select</a><a href="#autocomplete">Autocomplete</a><a href="#slider">Slider</a><a href="#textfield">Text field</a><a href="#togglebutton">Toggle button</a><a href="#rating">Rating</a>
+  <div class="grp">Data display</div>
+  <a href="#avatar">Avatar</a><a href="#badge">Badge</a><a href="#chip">Chip</a><a href="#divider">Divider</a><a href="#list">List</a><a href="#table">Table</a><a href="#tooltip">Tooltip</a>
+  <div class="grp">Feedback</div>
+  <a href="#alert">Alert</a><a href="#dialog">Dialog</a><a href="#snackbar">Snackbar</a><a href="#progress">Progress</a><a href="#skeleton">Skeleton</a><a href="#backdrop">Backdrop</a>
+  <div class="grp">Surfaces</div>
+  <a href="#appbar">App bar</a><a href="#card">Card</a><a href="#paper">Paper</a><a href="#accordion">Accordion</a>
+  <div class="grp">Navigation</div>
+  <a href="#bottomnav">Bottom navigation</a><a href="#drawer">Drawer</a><a href="#tabs">Tabs</a><a href="#menu">Menu</a><a href="#link">Link</a><a href="#stepper">Stepper</a><a href="#speeddial">Speed dial</a>
+  <div class="grp">Extensions · FamilyHub</div>
+  <a href="#band">Đỏ son band (signature)</a><a href="#eventtype">Event type</a><a href="#countdown">Countdown</a><a href="#daycell">Lunar day cell</a><a href="#monthgrid">Month grid</a><a href="#weekstrip">Week strip</a><a href="#petals">Tết petals</a>
+</nav>
+
+<main>
+  <header style="margin-bottom:40px">
+    <div class="t-overline">Đỏ son sơn mài · Material + MUI</div>
+    <div class="t-h1" style="margin-top:6px">FamilyHub Design System</div>
+    <p class="sec-desc" style="margin-top:10px">Like a family altar: a black-lacquer band with gold leaf and a turning bronze drum, and a tear-off calendar sheet in đỏ son on dó paper, so the lunar days that matter are seen first. Đỏ son leads every action; black lacquer marks solemn days (ngày giỗ); gold leaf only draws lines and rings. Toggle <b>Dev Mode</b> to inspect a component; <b>Copy as prompt</b> implements it in React Native.</p>
+  </header>
+
+  <!-- ===================== FOUNDATIONS ===================== -->
+  <section id="colors"><h2 class="sec">Palette</h2><p class="sec-desc">Semantic roles, each fill paired with its <code>--on-*</code> foreground; ratios are WCAG-computed from the hex.</p><div id="colorGrid"></div></section>
+
+  <section id="typography"><h2 class="sec">Typography</h2><p class="sec-desc">Be Vietnam Pro is the reading face (full Vietnamese diacritics, open counters). Playfair Display appears only at h1–h3 and the big lunar numeral. Body starts at 17px for older readers.</p><div id="typeList" data-insp="typography"></div></section>
+
+  <section id="spacing"><h2 class="sec">Spacing</h2><p class="sec-desc">4/8 grid plus semantic roles: related (8) &lt; section (24) &lt; major (32); gutter 20; touch target 48.</p><div id="spacingList"></div></section>
+
+  <section id="shape"><h2 class="sec">Shape</h2><p class="sec-desc">Soft corners. The petal radius (one sharp corner) is reserved for the single feature card on a screen.</p>
+    <div class="stage" id="shapeStage"></div></section>
+
+  <section id="elevation"><h2 class="sec">Shadows</h2><p class="sec-desc">Soft red-tinted shadow, no border stacked on top. Four levels are used; MUI's 0–24 collapses onto them.</p>
+    <div class="stage sunk">
+      <div class="cell"><div class="paper" style="box-shadow:var(--elev-0)">elev-0</div><div class="spec">flat</div></div>
+      <div class="cell"><div class="paper" style="box-shadow:var(--elev-1)">elev-1</div><div class="spec">cards, lists</div></div>
+      <div class="cell"><div class="paper" style="box-shadow:var(--elev-2)">elev-2</div><div class="spec">feature, FAB</div></div>
+      <div class="cell"><div class="paper" style="box-shadow:var(--elev-3)">elev-3</div><div class="spec">dialog, menu</div></div>
+    </div></section>
+
+  <section id="motion"><h2 class="sec">Transitions</h2><p class="sec-desc">Prominent but purposeful. Content rises in a 70ms stagger; controls answer with a spring; ambient motifs drift for 9–40s. Everything rests under "Reduce motion".</p>
+    <div class="stage sunk">
+      <div class="cell"><div class="motionDemo"><div class="card m-rise" style="--i:0;width:140px;height:28px;padding:0"></div></div><div class="spec">m-rise · 600ms ease-out-soft</div></div>
+      <div class="cell"><div class="motionDemo" style="color:var(--primary)"><svg width="140" height="52" class="m-drift"><use href="#m-cloud"/></svg></div><div class="spec">m-drift · 9s loop</div></div>
+      <div class="cell"><div class="motionDemo" style="color:var(--accent)"><svg width="96" height="96" class="m-spin"><use href="#m-drum"/></svg></div><div class="spec">m-spin · 40s ambient</div></div>
+      <div class="cell"><div class="motionDemo"><div class="daycell is-today" style="width:56px"><span class="sd">26</span><span class="ld">18</span></div></div><div class="spec">pulse-ring · today</div></div>
+      <div class="cell"><div class="motionDemo" style="color:var(--secondary)"><svg width="90" height="80" class="m-bloom" id="bloomDemo"><use href="#m-lotus"/></svg></div><div class="spec">m-bloom · spring (click to replay)</div></div>
+    </div></section>
+
+  <section id="icon"><h2 class="sec">Icons &amp; motifs</h2><p class="sec-desc">Rounded outline set in the style of Lucide (MIT), <code>stroke-width: var(--icon-stroke)</code>. Motifs are decorative and hidden from screen readers. Full sheet: <a class="link" href="icons.html">icons.html</a>.</p>
+    <div class="iconGrid" id="iconGrid" data-insp="icon"></div></section>
+
+  <!-- ===================== INPUTS ===================== -->
+  <section id="button"><h2 class="sec">Button</h2><p class="sec-desc">variant contained / tonal / outlined / text × color primary / secondary / error × size sm / md / lg. Press scales to .96 with a ripple.</p>
+    <div class="stage">
+      <div class="cell"><div class="btn btn-contained" data-insp="button"><svg class="ico ico--sm"><use href="#i-plus"/></svg>Thêm sự kiện</div><div class="spec">contained</div></div>
+      <div class="cell"><div class="btn btn-tonal" data-insp="button">Nhắc tôi</div><div class="spec">tonal</div></div>
+      <div class="cell"><div class="btn btn-outlined" data-insp="button">Mời người thân</div><div class="spec">outlined</div></div>
+      <div class="cell"><div class="btn btn-text" data-insp="button">Xem tất cả</div><div class="spec">text</div></div>
+      <div class="cell"><div class="btn btn-contained btn-secondary" data-insp="button">Thắp hương</div><div class="spec">contained · secondary</div></div>
+      <div class="cell"><div class="btn btn-outlined btn-error" data-insp="button"><svg class="ico ico--sm"><use href="#i-trash"/></svg>Xóa</div><div class="spec">outlined · error</div></div>
+      <div class="cell"><div class="btn btn-contained is-disabled" data-insp="button">Lưu</div><div class="spec">disabled</div></div>
+      <div class="cell"><div class="btn btn-contained btn-sm" data-insp="button">Nhỏ</div><div class="spec">size sm · 40</div></div>
+      <div class="cell"><div class="btn btn-contained btn-lg" data-insp="button">Đăng nhập</div><div class="spec">size lg · 56</div></div>
+    </div></section>
+
+  <section id="buttongroup"><h2 class="sec">Button group</h2><p class="sec-desc">Related actions sharing one outline.</p>
+    <div class="stage"><div class="btngroup" data-insp="buttongroup"><div class="btn is-selected">Ngày</div><div class="btn">Tuần</div><div class="btn">Tháng</div></div></div></section>
+
+  <section id="iconbutton"><h2 class="sec">Icon button</h2><p class="sec-desc">standard / filled / tonal / outlined, and a toggle (selected fills and pops).</p>
+    <div class="stage">
+      <div class="cell"><div class="iconbtn" data-insp="iconbutton"><svg class="ico"><use href="#i-more-v"/></svg></div><div class="spec">standard</div></div>
+      <div class="cell"><div class="iconbtn iconbtn-filled" data-insp="iconbutton"><svg class="ico"><use href="#i-plus"/></svg></div><div class="spec">filled</div></div>
+      <div class="cell"><div class="iconbtn iconbtn-tonal" data-insp="iconbutton"><svg class="ico"><use href="#i-share"/></svg></div><div class="spec">tonal</div></div>
+      <div class="cell"><div class="iconbtn iconbtn-outlined" data-insp="iconbutton"><svg class="ico"><use href="#i-edit"/></svg></div><div class="spec">outlined</div></div>
+      <div class="cell"><div class="iconbtn toggle" data-insp="iconbutton"><svg class="ico"><use href="#i-heart"/></svg></div><div class="spec">toggle (click)</div></div>
+      <div class="cell"><div class="badge-wrap"><div class="iconbtn" data-insp="iconbutton"><svg class="ico"><use href="#i-bell"/></svg></div><span class="badge">2</span></div><div class="spec">with badge</div></div>
+    </div></section>
+
+  <section id="fab"><h2 class="sec">Floating action button</h2><p class="sec-desc">Deep red: the one "add to the family calendar" moment per screen. regular / small / large / extended.</p>
+    <div class="stage">
+      <div class="cell"><div class="fab" data-insp="fab"><svg class="ico"><use href="#i-plus"/></svg></div><div class="spec">regular 56</div></div>
+      <div class="cell"><div class="fab fab-sm" data-insp="fab"><svg class="ico ico--sm"><use href="#i-plus"/></svg></div><div class="spec">small 40</div></div>
+      <div class="cell"><div class="fab fab-lg" data-insp="fab"><svg class="ico"><use href="#i-plus"/></svg></div><div class="spec">large 96</div></div>
+      <div class="cell"><div class="fab fab-ext" data-insp="fab"><svg class="ico"><use href="#i-plus"/></svg>Thêm sự kiện</div><div class="spec">extended</div></div>
+    </div></section>
+
+  <section id="checkbox"><h2 class="sec">Checkbox</h2><p class="sec-desc">Check mark springs in. Includes indeterminate and disabled.</p>
+    <div class="stage">
+      <div class="checkbox" data-insp="checkbox"><span class="box"><svg class="ico"><use href="#i-check"/></svg></span>Nhắc trước 7 ngày</div>
+      <div class="checkbox is-checked" data-insp="checkbox"><span class="box"><svg class="ico"><use href="#i-check"/></svg></span>Nhắc trước 3 ngày</div>
+      <div class="checkbox is-indeterminate" data-insp="checkbox"><span class="box"><svg class="ico"><use href="#i-minus"/></svg></span>Cả nhà (một phần)</div>
+      <div class="checkbox is-disabled" data-insp="checkbox"><span class="box"><svg class="ico"><use href="#i-check"/></svg></span>Không khả dụng</div>
+    </div></section>
+
+  <section id="radio"><h2 class="sec">Radio group</h2><p class="sec-desc">One choice from a short list.</p>
+    <div class="stage"><div class="radiogroup" data-insp="radio">
+      <div class="radio is-checked"><span class="dot"></span>Âm lịch</div>
+      <div class="radio"><span class="dot"></span>Dương lịch</div>
+      <div class="radio is-disabled"><span class="dot"></span>Cả hai (sắp có)</div>
+    </div></div></section>
+
+  <section id="switch"><h2 class="sec">Switch</h2><p class="sec-desc">Thumb stretches on press and springs across.</p>
+    <div class="stage">
+      <div class="switch is-on" data-insp="switch"><span class="track"><span class="thumb"></span></span>Lặp lại hằng năm</div>
+      <div class="switch" data-insp="switch"><span class="track"><span class="thumb"></span></span>Tháng nhuận</div>
+      <div class="switch is-disabled" data-insp="switch"><span class="track"><span class="thumb"></span></span>Tắt</div>
+    </div></section>
+
+  <section id="select"><h2 class="sec">Select</h2><p class="sec-desc">A field that opens a large, easy-to-tap list (used for lunar day/month, where native pickers don't apply).</p>
+    <div class="stage" style="align-items:flex-start">
+      <div class="field select is-focused" data-insp="select"><span class="label">Tháng âm lịch</span><div class="control"><span class="val">Tháng Mười</span><svg class="ico ico--sm adorn"><use href="#i-chevron-down"/></svg></div></div>
+      <div class="popover"><div class="opt">Tháng Chín</div><div class="opt is-selected">Tháng Mười <svg class="ico ico--sm" style="margin-left:auto"><use href="#i-check"/></svg></div><div class="opt">Tháng Mười một</div><div class="opt">Tháng Chạp</div></div>
+    </div></section>
+
+  <section id="autocomplete"><h2 class="sec">Autocomplete</h2><p class="sec-desc">Search relatives as you type; the match is highlighted in gold.</p>
+    <div class="stage" style="align-items:flex-start">
+      <div class="field is-focused" data-insp="autocomplete"><span class="label">Người liên quan</span><div class="control"><svg class="ico ico--sm adorn"><use href="#i-search"/></svg><span>bà</span></div></div>
+      <div class="popover"><div class="opt"><span class="avatar avatar-sm tone-2">PH</span><span><mark>Bà</mark> nội · Phạm Thị Hòa</span></div><div class="opt"><span class="avatar avatar-sm tone-3">TB</span><span><mark>Bà</mark> ngoại · Trần Thị Bích</span></div></div>
+    </div></section>
+
+  <section id="slider"><h2 class="sec">Slider</h2><p class="sec-desc">continuous / discrete, single / range — e.g. "nhắc trước bao nhiêu ngày".</p>
+    <div class="stage" style="gap:48px;padding-top:44px">
+      <div class="cell"><div class="slider" data-insp="slider"><div class="rail"></div><div class="fill" style="left:0;width:40%"></div><div class="knob" style="left:40%"></div><div class="valuelabel" style="left:40%">3</div></div><div class="spec">discrete · value label</div></div>
+      <div class="cell"><div class="slider" data-insp="slider"><div class="rail"></div><div class="fill" style="left:20%;width:50%"></div><div class="knob" style="left:20%"></div><div class="knob" style="left:70%"></div></div><div class="spec">range</div></div>
+    </div></section>
+
+  <section id="textfield"><h2 class="sec">Text field</h2><p class="sec-desc">outlined / filled / standard; empty, focused, filled, error, disabled; label always visible, error under its field.</p>
+    <div class="stage" style="align-items:flex-start">
+      <div class="field" data-insp="textfield"><span class="label">Email</span><div class="control"><svg class="ico ico--sm adorn"><use href="#i-mail"/></svg><span class="ph">ten@gmail.com</span></div><span class="helper">Dùng để đăng nhập</span></div>
+      <div class="field is-focused" data-insp="textfield"><span class="label">Tên sự kiện</span><div class="control">Giỗ ông nội</div></div>
+      <div class="field is-error" data-insp="textfield"><span class="label">Mật khẩu</span><div class="control">•••••<span class="adorn" style="margin-left:auto"><svg class="ico ico--sm"><use href="#i-eye"/></svg></span></div><span class="helper">Cần ít nhất 8 ký tự, có chữ và số</span></div>
+      <div class="field is-disabled" data-insp="textfield"><span class="label">Mã gia đình</span><div class="control">K7MQ2XHP</div></div>
+      <div class="field field-filled is-focused" data-insp="textfield"><span class="label">Địa điểm</span><div class="control"><svg class="ico ico--sm adorn"><use href="#i-map-pin"/></svg>Nhà thờ họ, Nam Định</div><span class="helper">filled</span></div>
+      <div class="field field-standard" data-insp="textfield"><span class="label">Ghi chú</span><div class="control"><span class="ph">Mỗi nhà góp một món</span></div><span class="helper">standard</span></div>
+    </div></section>
+
+  <section id="togglebutton"><h2 class="sec">Toggle button</h2><p class="sec-desc">Exclusive choice on a sunken track; the selected face lifts.</p>
+    <div class="stage">
+      <div class="togglegroup" data-insp="togglebutton"><div class="tg is-selected"><svg class="ico ico--sm"><use href="#i-sun"/></svg>Dương lịch</div><div class="tg"><svg class="ico ico--sm"><use href="#i-moon"/></svg>Âm lịch</div></div>
+      <div class="togglegroup" data-insp="togglebutton"><div class="tg">Ngày</div><div class="tg is-selected">Tháng</div><div class="tg">Sắp tới</div></div>
+    </div></section>
+
+  <section id="rating"><h2 class="sec">Rating</h2><p class="sec-desc">Required by the catalogue; FamilyHub uses it only to rate a past gathering. Not yet used in MVP.</p>
+    <div class="stage"><div class="rating" data-insp="rating"><svg class="ico on"><use href="#i-star"/></svg><svg class="ico on"><use href="#i-star"/></svg><svg class="ico on"><use href="#i-star"/></svg><svg class="ico on"><use href="#i-star"/></svg><svg class="ico off"><use href="#i-star"/></svg></div></div></section>
+
+  <!-- ===================== DATA DISPLAY ===================== -->
+  <section id="avatar"><h2 class="sec">Avatar</h2><p class="sec-desc">Initials on four heritage tints; a gold ring marks the person the event is about. Group overlaps by 10px.</p>
+    <div class="stage">
+      <div class="avatar avatar-sm" data-insp="avatar">HN</div><div class="avatar" data-insp="avatar">VH</div><div class="avatar avatar-lg tone-2 ring" data-insp="avatar">PH</div>
+      <div class="avatargroup" data-insp="avatar"><span class="avatar">VH</span><span class="avatar tone-2">TL</span><span class="avatar tone-3">NM</span><span class="avatar tone-4">+5</span></div>
+    </div></section>
+
+  <section id="badge"><h2 class="sec">Badge</h2><p class="sec-desc">Deep-red count (unread) and dot; pops in.</p>
+    <div class="stage">
+      <div class="badge-wrap" data-insp="badge"><div class="iconbtn"><svg class="ico"><use href="#i-bell"/></svg></div><span class="badge">2</span></div>
+      <div class="badge-wrap" data-insp="badge"><div class="iconbtn"><svg class="ico"><use href="#i-users"/></svg></div><span class="badge">9+</span></div>
+      <div class="badge-wrap" data-insp="badge"><div class="iconbtn"><svg class="ico"><use href="#i-calendar"/></svg></div><span class="badge dot"></span></div>
+    </div></section>
+
+  <section id="chip"><h2 class="sec">Chip</h2><p class="sec-desc">filled / outlined; filter (selected shows a check), input (deletable), assist (icon).</p>
+    <div class="stage">
+      <span class="chip is-selected" data-insp="chip"><svg class="ico ico--sm"><use href="#i-check"/></svg>Trước 7 ngày</span>
+      <span class="chip" data-insp="chip">Trước 3 ngày</span>
+      <span class="chip chip-outlined" data-insp="chip">Đúng ngày</span>
+      <span class="chip chip-outlined" data-insp="chip"><span class="avatar avatar-sm tone-2" style="width:26px;height:26px;margin-left:-8px">PH</span>Bà nội<span class="del"><svg class="ico ico--sm"><use href="#i-close"/></svg></span></span>
+      <span class="chip" data-insp="chip"><svg class="ico ico--sm" style="color:var(--ev-death)"><use href="#i-flame"/></svg>Ngày giỗ</span>
+      <span class="chip chip-sm" data-insp="chip">nhỏ</span>
+    </div></section>
+
+  <section id="divider"><h2 class="sec">Divider</h2><p class="sec-desc">full, inset (aligns past the leading icon), and with text.</p>
+    <div class="stage" style="flex-direction:column;align-items:stretch;gap:18px">
+      <hr class="divider" data-insp="divider"><hr class="divider divider-inset" data-insp="divider"><div class="divider-text" data-insp="divider">hoặc</div>
+    </div></section>
+
+  <section id="list"><h2 class="sec">List</h2><p class="sec-desc">one / two / three-line items with leading tile and trailing meta; hairlines, not nested cards.</p>
+    <div class="stage sunk"><div class="list" style="width:380px" data-insp="list">
+      <div class="listsub">Sắp tới</div>
+      <div class="li"><span class="evicon ev-death"><svg class="ico"><use href="#i-flame"/></svg></span><div class="tx"><div class="pri">Giỗ bà nội</div><div class="sec">Chủ nhật 29/11 · 21/10 âm · 10:00</div></div><span class="countdown"><b>3</b>ngày</span></div>
+      <div class="li"><span class="evicon ev-birthday"><svg class="ico"><use href="#i-cake"/></svg></span><div class="tx"><div class="pri">Sinh nhật mẹ</div><div class="sec">Thứ năm 03/12</div></div><span class="trail">7 ngày</span></div>
+      <div class="li li-3"><span class="evicon ev-family"><svg class="ico"><use href="#i-users"/></svg></span><div class="tx"><div class="pri">Họp mặt cuối năm</div><div class="sec">Thứ bảy 28/11 lúc 18:00 ở nhà bác Cả. Bàn việc chuẩn bị Tết và giỗ ông nội, mỗi nhà góp một món.</div></div><svg class="ico ico--sm" style="color:var(--subtle)"><use href="#i-chevron-right"/></svg></div>
+      <div class="li"><span class="avatar tone-3">BC</span><div class="tx"><div class="pri">Bác Cả</div></div><span class="trail">Thành viên</span></div>
+    </div></div></section>
+
+  <section id="table"><h2 class="sec">Table</h2><p class="sec-desc">For dense reference data such as the solar dates of a lunar anniversary over the years.</p>
+    <div class="stage sunk"><table class="table" style="width:420px" data-insp="table">
+      <thead><tr><th>Năm</th><th>Âm lịch</th><th class="num">Dương lịch</th></tr></thead>
+      <tbody><tr><td>2026 · Bính Ngọ</td><td>21/10</td><td class="num">29/11/2026</td></tr><tr><td>2027 · Đinh Mùi</td><td>21/10</td><td class="num">tính khi có API</td></tr></tbody></table></div></section>
+
+  <section id="tooltip"><h2 class="sec">Tooltip</h2><p class="sec-desc">plain and rich.</p>
+    <div class="stage">
+      <span class="tooltip" data-insp="tooltip">Rằm tháng Mười</span>
+      <span class="tooltip tooltip-rich" data-insp="tooltip"><b>Ngày 30 thiếu</b>Năm nào tháng chỉ có 29 ngày, giỗ được tính vào ngày cuối tháng.</span>
+    </div></section>
+
+  <!-- ===================== FEEDBACK ===================== -->
+  <section id="alert"><h2 class="sec">Alert</h2><p class="sec-desc">standard (tinted container) and filled; success / info / warning / error.</p>
+    <div class="stage" style="flex-direction:column;align-items:stretch">
+      <div class="alert alert-success" data-insp="alert"><svg class="ico"><use href="#i-check-circle"/></svg><div><b>Đã thêm sự kiện</b>Cả nhà sẽ được nhắc trước 7 và 3 ngày.</div></div>
+      <div class="alert alert-info" data-insp="alert"><svg class="ico"><use href="#i-info"/></svg><div>Ngày âm được tính lại mỗi năm, không cộng 365 ngày.</div></div>
+      <div class="alert alert-warning" data-insp="alert"><svg class="ico"><use href="#i-alert"/></svg><div>Năm nay tháng Mười chỉ có 29 ngày.</div></div>
+      <div class="alert alert-error" data-insp="alert"><svg class="ico"><use href="#i-x-circle"/></svg><div>Không tải được lịch. Kiểm tra mạng rồi thử lại.</div></div>
+      <div class="alert alert-filled alert-success" data-insp="alert"><svg class="ico"><use href="#i-check-circle"/></svg><div>Đã lưu nhắc nhở</div></div>
+    </div></section>
+
+  <section id="dialog"><h2 class="sec">Dialog</h2><p class="sec-desc">basic (confirm, destructive in error color) and full-screen (forms on small phones). Springs in over a scrim.</p>
+    <div class="stage sunk" style="align-items:flex-start">
+      <div class="dialog" data-insp="dialog"><div class="dialog-icon"><svg class="ico"><use href="#i-trash"/></svg></div><div class="dh">Xóa sự kiện?</div><div class="db">"Giỗ bà nội" sẽ bị xóa khỏi lịch của cả gia đình, kể cả các năm sau.</div><div class="da"><div class="btn btn-text">Giữ lại</div><div class="btn btn-contained btn-error">Xóa</div></div></div>
+      <div class="dialog dialog-full" data-insp="dialog"><div class="bar"><div class="iconbtn"><svg class="ico"><use href="#i-close"/></svg></div><div class="ttl">Thêm người thân</div><div class="btn btn-text">Lưu</div></div><div style="padding:20px;display:flex;flex-direction:column;gap:16px"><div class="field"><span class="label">Họ và tên</span><div class="control"><span class="ph">Nguyễn Văn Phúc</span></div></div><div class="switch is-on"><span class="track"><span class="thumb"></span></span>Đã khuất</div></div></div>
+    </div></section>
+
+  <section id="snackbar"><h2 class="sec">Snackbar</h2><p class="sec-desc">Inverse surface; the action is gold.</p>
+    <div class="stage" style="flex-direction:column;align-items:flex-start">
+      <div class="snackbar" data-insp="snackbar"><span class="tx">Đã sao chép mã mời</span></div>
+      <div class="snackbar" data-insp="snackbar"><span class="tx">Đã xóa "Họp mặt cuối năm"</span><span class="act">Hoàn tác</span></div>
+    </div></section>
+
+  <section id="progress"><h2 class="sec">Progress</h2><p class="sec-desc">linear and circular, determinate and indeterminate.</p>
+    <div class="stage">
+      <div class="cell"><div class="progress" data-insp="progress"><div class="bar" style="width:62%"></div></div><div class="spec">linear 62%</div></div>
+      <div class="cell"><div class="progress indet" data-insp="progress"><div class="bar"></div></div><div class="spec">linear indeterminate</div></div>
+      <div class="cell"><svg class="spinner" viewBox="0 0 50 50" data-insp="progress"><circle class="track" cx="25" cy="25" r="20"/><circle cx="25" cy="25" r="20" stroke-dasharray="94 126" transform="rotate(-90 25 25)"/></svg><div class="spec">circular 75%</div></div>
+      <div class="cell"><svg class="spinner indet" viewBox="0 0 50 50" data-insp="progress"><circle class="track" cx="25" cy="25" r="20"/><circle class="arc" cx="25" cy="25" r="20"/></svg><div class="spec">circular indeterminate</div></div>
+    </div></section>
+
+  <section id="skeleton"><h2 class="sec">Skeleton</h2><p class="sec-desc">Paper shimmer in the shape of what is loading.</p>
+    <div class="stage"><div class="card" style="width:340px;display:flex;gap:14px" data-insp="skeleton"><div class="skeleton" style="width:48px;height:48px;border-radius:var(--r-md)"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="skeleton" style="height:16px;width:70%"></div><div class="skeleton" style="height:12px;width:45%"></div></div></div></div></section>
+
+  <section id="backdrop"><h2 class="sec">Backdrop</h2><p class="sec-desc">Đỏ son-tinted scrim behind dialogs, sheets and the drawer.</p>
+    <div class="stage" style="padding:0;overflow:hidden"><div class="backdrop" style="width:100%;height:180px" data-insp="backdrop"><svg class="spinner indet" viewBox="0 0 50 50" style="--x:0"><circle class="track" cx="25" cy="25" r="20" style="stroke:rgb(255 255 255 / .25)"/><circle class="arc" cx="25" cy="25" r="20" style="stroke:var(--accent-bright)"/></svg></div></div></section>
+
+  <!-- ===================== SURFACES ===================== -->
+  <section id="appbar"><h2 class="sec">App bar</h2><p class="sec-desc">small (on paper) for inner screens, center-aligned for forms, and the large red band for the home and calendar.</p>
+    <div class="stage sunk" style="flex-direction:column;align-items:stretch">
+      <div class="appbar" data-insp="appbar" style="background:var(--surface);border-radius:var(--r-md)"><div class="iconbtn"><svg class="ico"><use href="#i-back"/></svg></div><div class="ttl">Thành viên</div><div class="iconbtn"><svg class="ico"><use href="#i-user-plus"/></svg></div></div>
+      <div class="appbar appbar-center" data-insp="appbar" style="background:var(--surface);border-radius:var(--r-md)"><div class="iconbtn"><svg class="ico"><use href="#i-close"/></svg></div><div class="ttl">Thêm sự kiện</div><div class="btn btn-text">Lưu</div></div>
+      <div class="band" data-insp="appbar" style="border-radius:var(--r-md)"><svg class="motif m-drift" width="170" height="62" style="right:-10px;bottom:6px;opacity:.4"><use href="#m-cloud"/></svg><div class="appbar"><div class="ttl" style="padding:0">Lịch gia đình</div><div class="iconbtn on-band"><svg class="ico"><use href="#i-search"/></svg></div></div><div class="headline">Tháng 11, 2026</div><div class="eyebrow">Tháng Chín – Mười năm Bính Ngọ</div><svg class="fret"><rect width="100%" height="10" fill="url(#p-fret)"/></svg></div>
+    </div></section>
+
+  <section id="card"><h2 class="sec">Card</h2><p class="sec-desc">elevated / outlined / filled, plus the petal feature card. Interactive cards lift 2px on hover and compress on press.</p>
+    <div class="stage sunk" style="align-items:stretch">
+      <div class="card is-interactive" style="width:220px" data-insp="card"><div class="t-overline">elevated</div><div class="t-h6" style="margin-top:6px">Gia đình họ Nguyễn</div><div class="t-body2">8 thành viên</div></div>
+      <div class="card card-outlined" style="width:220px" data-insp="card"><div class="t-overline">outlined</div><div class="t-h6" style="margin-top:6px">Nhà ngoại Hà Đông</div><div class="t-body2">12 thành viên</div></div>
+      <div class="card card-filled" style="width:220px" data-insp="card"><div class="t-overline">filled</div><div class="t-h6" style="margin-top:6px">Có mã mời?</div><div class="t-body2">Nhập 8 ký tự</div></div>
+      <div class="card card-petal is-interactive" style="width:260px" data-insp="card"><div class="row" style="justify-content:space-between"><span class="evbadge ev-death"><svg class="ico"><use href="#i-flame"/></svg>Ngày giỗ</span><span class="countdown soon"><b>3</b>ngày</span></div><div class="t-h4" style="margin-top:12px">Giỗ bà nội</div><div class="t-body2">21/10 âm · Chủ nhật 29/11</div></div>
+    </div></section>
+
+  <section id="paper"><h2 class="sec">Paper</h2><p class="sec-desc">The raw surface behind cards, menus and sheets, at the four elevation levels (see Shadows).</p>
+    <div class="stage sunk"><div class="paper" style="box-shadow:var(--elev-1)" data-insp="paper">elev-1</div><div class="paper" style="box-shadow:var(--elev-2)" data-insp="paper">elev-2</div><div class="paper" style="box-shadow:var(--elev-3);border-radius:var(--r-xl)" data-insp="paper">elev-3 · xl</div></div></section>
+
+  <section id="accordion"><h2 class="sec">Accordion</h2><p class="sec-desc">Chevron rotates with a spring; used for settings and long notes.</p>
+    <div class="stage sunk"><div class="accordion" data-insp="accordion">
+      <div class="acc-item is-open"><div class="acc-head"><svg class="ico ico--sm" style="color:var(--primary)"><use href="#i-moon"/></svg>Quy tắc ngày âm<svg class="ico ico--sm"><use href="#i-chevron-down"/></svg></div><div class="acc-body">Tháng nhuận: giỗ vẫn tính theo tháng thường. Ngày 30 thiếu: tính vào ngày cuối tháng.</div></div>
+      <div class="acc-item"><div class="acc-head"><svg class="ico ico--sm" style="color:var(--primary)"><use href="#i-bell"/></svg>Giờ nhắc<svg class="ico ico--sm"><use href="#i-chevron-down"/></svg></div></div>
+    </div></div></section>
+
+  <!-- ===================== NAVIGATION ===================== -->
+  <section id="bottomnav"><h2 class="sec">Bottom navigation</h2><p class="sec-desc">Four destinations, icon + label always. The red pill springs to the selected item (click to try). Sits above the system gesture area.</p>
+    <div class="stage sunk"><div class="bottomnav" style="width:380px;border-radius:var(--r-lg)" data-insp="bottomnav">
+      <div class="ni is-selected"><span class="pill"><svg class="ico"><use href="#i-home"/></svg></span>Trang chủ</div>
+      <div class="ni"><span class="pill"><svg class="ico"><use href="#i-calendar"/></svg></span>Lịch</div>
+      <div class="ni"><span class="pill"><svg class="ico"><use href="#i-users"/></svg></span>Gia đình</div>
+      <div class="ni"><span class="pill"><svg class="ico"><use href="#i-user"/></svg></span>Cá nhân</div>
+    </div></div></section>
+
+  <section id="drawer"><h2 class="sec">Drawer</h2><p class="sec-desc">Modal family switcher (standard on tablets).</p>
+    <div class="stage sunk" style="padding:0;overflow:hidden;align-items:stretch"><div class="drawer" data-insp="drawer">
+      <div class="dhead">Gia đình của bạn</div>
+      <div class="di is-selected"><svg class="ico"><use href="#i-home"/></svg>Gia đình họ Nguyễn</div>
+      <div class="di"><svg class="ico"><use href="#i-home"/></svg>Nhà ngoại Hà Đông</div>
+      <div class="dsec">Thao tác</div>
+      <div class="di"><svg class="ico"><use href="#i-plus"/></svg>Tạo gia đình mới</div>
+      <div class="di"><svg class="ico"><use href="#i-key"/></svg>Nhập mã mời</div>
+    </div><div class="backdrop" style="flex:1;min-height:320px"></div></div></section>
+
+  <section id="tabs"><h2 class="sec">Tabs</h2><p class="sec-desc">fixed and scrollable; the indicator slides with a spring (click to try).</p>
+    <div class="stage sunk" style="flex-direction:column;align-items:stretch">
+      <div class="tabs" data-insp="tabs"><div class="tab is-selected">Thành viên</div><div class="tab">Người thân</div><div class="tab">Đã khuất</div><span class="ind"></span></div>
+      <div class="tabs tabs-scroll" data-insp="tabs" style="max-width:380px"><div class="tab is-selected">Tất cả</div><div class="tab">Ngày giỗ</div><div class="tab">Sinh nhật</div><div class="tab">Kỷ niệm cưới</div><div class="tab">Ngày lễ</div><span class="ind"></span></div>
+    </div></section>
+
+  <section id="menu"><h2 class="sec">Menu</h2><p class="sec-desc">Dropdown from a more-button; destructive item in error ink below a separator.</p>
+    <div class="stage sunk"><div class="popover menu" data-insp="menu">
+      <div class="opt"><svg class="ico ico--sm"><use href="#i-edit"/></svg>Sửa sự kiện</div>
+      <div class="opt"><svg class="ico ico--sm"><use href="#i-share"/></svg>Chia sẻ</div>
+      <div class="opt"><svg class="ico ico--sm"><use href="#i-copy"/></svg>Nhân bản<span class="kbd">năm sau</span></div>
+      <div class="sep"></div>
+      <div class="opt danger"><svg class="ico ico--sm"><use href="#i-trash"/></svg>Xóa</div>
+    </div></div></section>
+
+  <section id="link"><h2 class="sec">Link</h2><p class="sec-desc">Đỏ son ink, soft underline that firms on hover.</p>
+    <div class="stage"><p class="t-body1" data-insp="link">Chưa có tài khoản? <span class="link">Tạo tài khoản</span></p></div></section>
+
+  <section id="stepper"><h2 class="sec">Stepper</h2><p class="sec-desc">Create-family onboarding; the active step pulses gold.</p>
+    <div class="stage"><div class="stepper" data-insp="stepper"><div class="step is-done"><span class="n"><svg class="ico ico--sm"><use href="#i-check"/></svg></span>Tên gia đình</div><div class="step is-active"><span class="n">2</span>Người thân</div><div class="step"><span class="n">3</span>Mời mọi người</div></div></div></section>
+
+  <section id="speeddial"><h2 class="sec">Speed dial</h2><p class="sec-desc">Deep-red FAB fans out the most common adds.</p>
+    <div class="stage sunk"><div class="speeddial" data-insp="speeddial">
+      <div class="sd-act" style="--i:2"><span class="lbl">Ngày giỗ</span><span class="fab fab-sm"><svg class="ico ico--sm"><use href="#i-flame"/></svg></span></div>
+      <div class="sd-act" style="--i:1"><span class="lbl">Sinh nhật</span><span class="fab fab-sm"><svg class="ico ico--sm"><use href="#i-cake"/></svg></span></div>
+      <div class="sd-act" style="--i:0"><span class="lbl">Họp mặt</span><span class="fab fab-sm"><svg class="ico ico--sm"><use href="#i-users"/></svg></span></div>
+      <div class="fab is-open"><svg class="ico"><use href="#i-plus"/></svg></div>
+    </div></div></section>
+
+  <section><h2 class="sec">Layout primitives</h2><p class="sec-desc">Utilities, not components: <code>.stack</code> (column, gap-related), <code>.row</code>, <code>.scrollrow</code> (keeps shadows unclipped), <code>.bleed</code> + <code>.inset</code> for full-bleed sections. React Native: <code>View</code> with the spacing tokens.</p></section>
+
+  <!-- ===================== EXTENSIONS ===================== -->
+  <section id="band"><h2 class="sec">Đỏ son band (signature)</h2><p class="sec-desc">The one expressive surface per screen: black lacquer, a live 3D trống đồng (drum3d.js), a drifting mây lành and a gold hồi văn fret on its edge. Everything else stays quiet paper.</p>
+    <div class="stage sunk"><div class="phone" data-insp="band"><div class="band" style="padding-bottom:40px">
+      <svg class="motif m-spin" width="190" height="190" style="right:-60px;top:-60px;opacity:.22"><use href="#m-drum"/></svg>
+      <svg class="motif m-drift" width="150" height="55" style="left:-20px;bottom:14px;opacity:.35"><use href="#m-cloud"/></svg>
+      <div class="eyebrow">Thứ năm, 26/11/2026</div><div class="headline">Chào buổi tối, Hiếu</div>
+      <svg class="fret"><rect width="100%" height="10" fill="url(#p-fret)"/></svg></div></div></div></section>
+
+  <section id="tolich"><h2 class="sec">Tờ lịch bóc</h2><p class="sec-desc">The Home hero: a tear-off calendar sheet. Red binding with month and year, perforation, the day huge in đỏ son, weekday, lunar date and a countdown, a proverb at the foot, stacked sheets and a curled corner. Tap tears it away (650ms) and the next sheet rises.</p>
+    <div class="stage sunk"><div style="width:320px" data-insp="tolich"><div class="tolich" id="demoSheet">
+      <div class="th"><span>Tháng 11 · 2026</span><span>Năm Bính Ngọ</span></div><div class="perf"></div>
+      <div class="day">26</div><div class="wd">Thứ năm</div>
+      <div class="lunar"><div><div class="k">Âm lịch</div><div class="v">18</div><div class="s">tháng Mười</div></div><div class="rule"></div><div><div class="k">Sắp tới</div><div class="v">3</div><div class="s">ngày đến giỗ bà</div></div></div>
+      <div class="proverb">“Uống nước nhớ nguồn”</div></div></div></div></section>
+
+  <section id="lacquercard"><h2 class="sec">Lacquer card</h2><p class="sec-desc">Black lacquer with a gold hairline for solemn events (ngày giỗ). At most one per screen, so it keeps its weight.</p>
+    <div class="stage sunk"><div class="lacquercard" style="width:340px;display:flex;gap:14px;align-items:center" data-insp="lacquercard">
+      <span class="flame"><svg class="ico"><use href="#i-flame"/></svg></span>
+      <div style="flex:1"><div class="k">Ngày giỗ sắp tới</div><div class="t">Giỗ bà nội</div><div class="k"><span class="gold">21/10 âm</span> · CN 29/11</div></div>
+      <span class="countdown"><b>3</b>ngày</span></div></div></section>
+
+  <section id="drum3d"><h2 class="sec">Trống đồng 3D</h2><p class="sec-desc">Procedural Đông Sơn drum (three.js, <code>drum3d.js</code>): lathe body, canvas-engraved face with the 14-ray star, circle-dot and tick bands and 18 Lạc birds, aged bronze with patina. Turns slowly; <code>strike()</code> spins it faster with the drum sound. Still under Reduce Motion; the SVG drum is the fallback when WebGL is unavailable. Needs the page served over http (<code>python -m http.server</code>).</p>
+    <div class="stage" style="background:linear-gradient(150deg,var(--band-from),var(--band-to));justify-content:center"><div class="drum3d" style="position:relative;width:320px;height:300px" data-insp="drum3d"><svg class="fallback" viewBox="0 0 100 100"><use href="#m-drum"/></svg><canvas></canvas></div></div></section>
+
+  <section id="sounds"><h2 class="sec">Âm thanh</h2><p class="sec-desc">Synthesized in <code>tools/synth_sounds.py</code> (no samples, no licences). Off by default; the user turns them on in Settings. Never autoplay.</p>
+    <div class="stage" data-insp="sounds">
+      <div class="btn btn-tonal" data-sound="trong"><svg class="ico ico--sm"><use href="#i-volume"/></svg>Trống đồng · mở app</div>
+      <div class="btn btn-tonal" data-sound="mo"><svg class="ico ico--sm"><use href="#i-volume"/></svg>Mõ · chạm chọn ngày</div>
+      <div class="btn btn-tonal" data-sound="chuong"><svg class="ico ico--sm"><use href="#i-volume"/></svg>Chuông · nhắc nhở</div>
+    </div></section>
+
+  <section id="eventtype"><h2 class="sec">Event type</h2><p class="sec-desc">Six types, each with its own icon AND pigment — never told by color alone. Tile (48) for rows, badge for headers.</p>
+    <div class="stage" id="evStage"></div></section>
+
+  <section id="countdown"><h2 class="sec">Countdown</h2><p class="sec-desc">Days left, the number set in the display face. Turns solid deep red within 3 days.</p>
+    <div class="stage"><span class="countdown" data-insp="countdown"><b>23</b>ngày</span><span class="countdown soon" data-insp="countdown"><b>3</b>ngày</span><span class="countdown soon" data-insp="countdown"><b>0</b>Hôm nay</span></div></section>
+
+  <section id="daycell"><h2 class="sec">Lunar day cell</h2><p class="sec-desc">Solar day large, lunar day small. Mùng 1 and rằm get a gold ring mark; today is solid red with a gold pulse; Sunday is deep red; events show up to three pigment dots.</p>
+    <div class="stage" style="gap:10px">
+      <div class="cell"><div class="daycell" style="width:56px" data-insp="daycell"><span class="sd">24</span><span class="ld">16</span></div><div class="spec">default</div></div>
+      <div class="cell"><div class="daycell lunar-mark" style="width:56px" data-insp="daycell"><span class="sd">23</span><span class="ld">15</span><span class="marks"><i style="background:var(--ev-important)"></i></span></div><div class="spec">rằm + event</div></div>
+      <div class="cell"><div class="daycell is-today" style="width:56px" data-insp="daycell"><span class="sd">26</span><span class="ld">18</span></div><div class="spec">today</div></div>
+      <div class="cell"><div class="daycell is-selected sun" style="width:56px" data-insp="daycell"><span class="sd">29</span><span class="ld">21</span><span class="marks"><i style="background:var(--ev-death)"></i></span></div><div class="spec">selected · Sunday · giỗ</div></div>
+      <div class="cell"><div class="daycell lunar-mark" style="width:56px" data-insp="daycell"><span class="sd">9</span><span class="ld">1/10</span></div><div class="spec">mùng 1</div></div>
+      <div class="cell"><div class="daycell out" style="width:56px" data-insp="daycell"><span class="sd">1</span><span class="ld">23</span></div><div class="spec">other month</div></div>
+    </div></section>
+
+  <section id="monthgrid"><h2 class="sec">Month grid</h2><p class="sec-desc">Monday-first, built from day cells. Swipe left/right changes month with a slide-and-fade.</p>
+    <div class="stage"><div style="width:400px" data-insp="monthgrid"><div class="monthgrid" id="mg"></div></div></div></section>
+
+  <section id="weekstrip"><h2 class="sec">Week strip</h2><p class="sec-desc">The compact calendar on the home band; each day is a lifted cell.</p>
+    <div class="stage sunk"><div class="weekstrip" style="width:400px" data-insp="weekstrip" id="ws"></div></div></section>
+
+  <section id="petals"><h2 class="sec">Tết petals</h2><p class="sec-desc">Falling hoa mai over the band from 23 tháng Chạp to mùng 7 Tết only. Hidden entirely under "Reduce motion".</p>
+    <div class="stage sunk"><div class="phone" data-insp="petals" style="height:220px"><div class="band" style="height:100%"><div class="eyebrow">Mùng 1 Tết · Đinh Mùi</div><div class="headline">Chúc mừng năm mới</div>
+      <div class="petals"><i style="--i:0;left:8%;--dx:30px"><svg width="14" height="14"><use href="#m-mai"/></svg></i><i style="--i:1;left:28%;--dx:-20px"><svg width="12" height="12"><use href="#m-mai"/></svg></i><i style="--i:2;left:52%;--dx:40px"><svg width="16" height="16"><use href="#m-mai"/></svg></i><i style="--i:3;left:70%;--dx:-30px"><svg width="12" height="12"><use href="#m-mai"/></svg></i><i style="--i:4;left:86%;--dx:20px"><svg width="14" height="14"><use href="#m-mai"/></svg></i><i style="--i:5;left:40%;--dx:-40px"><svg width="10" height="10"><use href="#m-mai"/></svg></i></div>
+      <svg class="fret"><rect width="100%" height="10" fill="url(#p-fret)"/></svg></div></div></div></section>
+</main>
+
+<script>
+/* ===== Foundations (values mirror styles.css :root) ===== */
+const PAL=[
+ ['Primary · đỏ son',[['primary','#9B1B1E','on-primary','#FFFFFF'],['primary-strong','#7A1215','on-primary','#FFFFFF'],['primary-container','#F6DEDB','on-primary-container','#7A1215']]],
+ ['Lacquer band · sơn then',[['band-from','#1F110D','on-band','#F6E7C8'],['band-to','#2E1712','on-band-muted','#C9B593']]],
+ ['Accent · vàng thếp',[['accent','#B8862B','on-accent','#2A1D05'],['accent-bright','#E0B552','band-from','#1F110D'],['accent-container','#F6EBCF','accent-ink','#6E5011']]],
+ ['Neutrals · giấy dó',[['bg','#F7F0E3','on-bg','#241812'],['surface','#FFFDF8','on-surface','#241812'],['surface-sunken','#EEE4D2','muted','#5E5048'],['muted-surface','#F1E8D8','on-muted-surface','#4E4038'],['outline','#8F8277','surface','#FFFDF8'],['border','#E4D7C2','on-surface','#241812']]],
+ ['Status',[['success','#2F6B45','on-success','#FFFFFF'],['error','#B3362F','on-error','#FFFFFF'],['warning','#8A5A00','on-warning','#FFFFFF'],['info','#3B5A8C','on-info','#FFFFFF'],['inverse-surface','#241812','inverse-on-surface','#F7F0E3']]],
+ ['Event pigments',[['ev-birthday-bg','#F6EBCF','ev-birthday','#6E5011'],['ev-death-bg','#EADFD3','ev-death','#3A2418'],['ev-wedding-bg','#F7E1E5','ev-wedding','#A8435A'],['ev-family-bg','#DCEDE8','ev-family','#1F6F64'],['ev-important-bg','#E1E8F3','ev-important','#3B5A8C'],['ev-holiday-bg','#F6DEDB','ev-holiday','#9B1B1E']]]];
+function lum(h){return[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0)}
+function ratio(a,b){const x=lum(a),y=lum(b);return((Math.max(x,y)+.05)/(Math.min(x,y)+.05)).toFixed(2)}
+colorGrid.innerHTML=PAL.map(([g,items])=>`<div class="grp-title">${g}</div><div class="colors">${items.map(([n,h,on,oh])=>`<div class="sw"><div class="c" style="background:${h};color:${oh}">Aa ${ratio(h,oh)}</div><div class="m"><div class="n">--${n}</div><div class="v">${h} · on: --${on}</div></div></div>`).join('')}</div>`).join('');
+const TYPE=[['t-h1','Playfair 600 / 40','Lịch gia đình'],['t-h2','Playfair 600 / 32','Tháng 11, 2026'],['t-h3','Playfair 600 / 26','Giỗ bà nội'],['t-h4','Be Vietnam 600 / 22','Ngày giỗ sắp tới'],['t-h5','Be Vietnam 600 / 19','Gia đình họ Nguyễn'],['t-h6','Be Vietnam 600 / 17','Họp mặt cuối năm'],['t-subtitle1','Be Vietnam 500 / 17','Chủ nhật, 29/11/2026'],['t-subtitle2','Be Vietnam 500 / 15','21/10 âm · nhà thờ họ'],['t-body1','Be Vietnam 400 / 17','Cúng giỗ lúc 10 giờ, ăn cơm trưa cùng cả nhà.'],['t-body2','Be Vietnam 400 / 15','Mỗi người vẫn có thể đổi giờ nhắc riêng.'],['t-button','Be Vietnam 600 / 16','Thêm sự kiện'],['t-caption','Be Vietnam 400 / 13','Tham gia 02/09/2026'],['t-overline','Be Vietnam 600 / 12 · +12%','Sắp tới'],['t-numeral','Playfair 600 / 56','18']];
+typeList.innerHTML=TYPE.map(([n,m,s])=>`<div class="typerow"><div class="tk">${n}<br>${m}</div><div class="${n}">${s}</div></div>`).join('');
+const SPACING=[['sp-4',4],['sp-8 · gap-related',8],['sp-12',12],['sp-16',16],['sp-20 · layout-gutter',20],['sp-24 · gap-section',24],['sp-32 · gap-major',32],['sp-48 · target-min',48],['sp-64',64]];
+spacingList.innerHTML=SPACING.map(([n,v])=>`<div class="sprow"><div class="lbl">${n} · ${v}px</div><div class="bar" style="width:${v*4}px"></div></div>`).join('');
+const RADII=[['r-xs',6],['r-sm',10],['r-md',14],['r-lg',20],['r-xl',28],['r-full','999'],['r-petal','28 28 28 8']];
+shapeStage.innerHTML=RADII.map(([n,v])=>`<div class="cell"><div style="width:72px;height:72px;background:var(--primary-container);border-radius:var(--${n})"></div><div class="spec">--${n} · ${v}</div></div>`).join('');
+const ICONS=['home','calendar','users','user','user-plus','bell','search','menu','settings','back','chevron-left','chevron-right','chevron-down','close','check','plus','more-v','edit','trash','share','copy','clock','map-pin','moon','sun','repeat','flame','cake','heart','star','flag','gift','info','alert','check-circle','x-circle','lock','mail','key','log-out','camera','eye'];
+iconGrid.innerHTML=ICONS.map(n=>`<div class="it"><svg class="ico ico--lg"><use href="#i-${n}"/></svg><div class="nm">i-${n}</div></div>`).join('')+['cloud','drum','lotus','mai'].map(n=>`<div class="it" style="color:var(--primary)"><svg width="56" height="32"><use href="#m-${n}"/></svg><div class="nm">m-${n}</div></div>`).join('');
+const EV=[['birthday','cake','Sinh nhật'],['death','flame','Ngày giỗ'],['wedding','heart','Kỷ niệm cưới'],['family','users','Sự kiện gia đình'],['important','star','Ngày quan trọng'],['holiday','flag','Ngày lễ']];
+evStage.innerHTML=EV.map(([k,i,l])=>`<div class="cell" data-insp="eventtype"><span class="evicon ev-${k}"><svg class="ico"><use href="#i-${i}"/></svg></span><span class="evbadge ev-${k}"><svg class="ico"><use href="#i-${i}"/></svg>${l}</span></div>`).join('');
+/* November 2026 with lunar days (from the verified lunar table: 9/11 = mùng 1 tháng Mười) */
+(function(){const wd=['T2','T3','T4','T5','T6','T7','CN'];let h=wd.map((w,i)=>`<div class="wd${i==6?' sun':''}">${w}</div>`).join('');
+ const lunar=d=>d<=8?[d+22,9]:[d-8,10];const ev={20:['holiday'],23:['important'],28:['family'],29:['death']};
+ const prev=[26,27,28,29,30,31];prev.forEach((d,i)=>h+=`<div class="daycell out"><span class="sd">${d}</span><span class="ld">${d-9}</span></div>`);
+ for(let d=1;d<=30;d++){const[l,m]=lunar(d);const sun=(d%7===1);const mark=l===1||l===15;const cls=['daycell',sun?'sun':'',mark?'lunar-mark':'',d===26?'is-today':'',d===29?'is-selected':''].join(' ');
+  h+=`<div class="${cls}"><span class="sd">${d}</span><span class="ld">${l===1?l+'/'+m:l}</span><span class="marks">${(ev[d]||[]).map(t=>`<i style="background:var(--ev-${t})"></i>`).join('')}</span></div>`;}
+ mg.innerHTML=h;
+ const w=[23,24,25,26,27,28,29];ws.innerHTML=w.map((d,i)=>{const[l]=lunar(d);return `<div class="daycell${d===26?' is-today':''}${d===29?' sun':''}${l===15?' lunar-mark':''}"><span class="wdn">${wd[i]}</span><span class="sd">${d}</span><span class="ld">${l}</span><span class="marks">${(ev[d]||[]).map(t=>`<i style="background:var(--ev-${t})"></i>`).join('')}</span></div>`}).join('');})();
+
+/* ===== small interactions so motion can be felt ===== */
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.fab');if(!b)return;const r=b.getBoundingClientRect();const s=document.createElement('span');s.className='ripple';const z=Math.max(r.width,r.height);s.style.cssText=`width:${z}px;height:${z}px;left:${e.clientX-r.left-z/2}px;top:${e.clientY-r.top-z/2}px`;b.appendChild(s);setTimeout(()=>s.remove(),620);});
+document.addEventListener('click',e=>{if(document.body.classList.contains('dev'))return;
+ const t=e.target;let x;
+ if(x=t.closest('.chip:not(.chip-outlined)')){x.classList.toggle('is-selected');}
+ if(x=t.closest('.switch:not(.is-disabled)'))x.classList.toggle('is-on');
+ if(x=t.closest('.checkbox:not(.is-disabled)')){x.classList.toggle('is-checked');x.classList.remove('is-indeterminate');}
+ if(x=t.closest('.radio:not(.is-disabled)')){x.parentElement.querySelectorAll('.radio').forEach(r=>r.classList.remove('is-checked'));x.classList.add('is-checked');}
+ if(x=t.closest('.iconbtn.toggle'))x.classList.toggle('is-selected');
+ if(x=t.closest('.togglegroup .tg')){x.parentElement.querySelectorAll('.tg').forEach(r=>r.classList.remove('is-selected'));x.classList.add('is-selected');}
+ if(x=t.closest('.btngroup .btn')){x.parentElement.querySelectorAll('.btn').forEach(r=>r.classList.remove('is-selected'));x.classList.add('is-selected');}
+ if(x=t.closest('.bottomnav .ni')){x.parentElement.querySelectorAll('.ni').forEach(r=>r.classList.remove('is-selected'));x.classList.add('is-selected');}
+ if(x=t.closest('.tabs .tab')){x.parentElement.querySelectorAll('.tab').forEach(r=>r.classList.remove('is-selected'));x.classList.add('is-selected');placeInd(x.parentElement);}
+ if(x=t.closest('.acc-head'))x.parentElement.classList.toggle('is-open');
+ if(x=t.closest('.monthgrid .daycell:not(.out)')){x.parentElement.querySelectorAll('.is-selected').forEach(r=>r.classList.remove('is-selected'));x.classList.add('is-selected');}
+ if(t.closest('#bloomDemo')){const b=bloomDemo;b.classList.remove('m-bloom');void b.offsetWidth;b.classList.add('m-bloom');}
+});
+function placeInd(tabs){const s=tabs.querySelector('.tab.is-selected'),i=tabs.querySelector('.ind');i.style.left=s.offsetLeft+16+'px';i.style.width=s.offsetWidth-32+'px';}
+document.querySelectorAll('.tabs').forEach(placeInd);
+document.querySelectorAll('.acc-item:not(.is-open) .acc-body').forEach(b=>b.style.display='none');
+document.addEventListener('click',e=>{const h=e.target.closest('.acc-head');if(!h)return;const b=h.parentElement.querySelector('.acc-body');if(b)b.style.display=h.parentElement.classList.contains('is-open')?'':'none';});
+
+/* ===== SPECS: one entry per component (Inspector + Copy-as-prompt) ===== */
+const C=(n,v)=>({n,v,c:v.startsWith('#')?v:undefined});
+const tk=(r,n,v)=>({r,n,v,c:/^#/.test(v)?v:undefined});
+const RN='src/shared/ui/';
+const SPECS={
+ typography:{name:'Typography',file:RN+'AppText.tsx',desc:'MUI typography variants h1–h6, subtitle1/2, body1/2, button, caption, overline, plus numeral. Reading face Be Vietnam Pro; Playfair Display only h1–h3 and numeral. Respect system font scale (cap at 1.6×).',props:[{n:'variant',t:'h1|h2|h3|h4|h5|h6|subtitle1|subtitle2|body1|body2|button|caption|overline|numeral',def:'body1'},{n:'color',t:'token',def:'on-surface'},{n:'align',t:'left|center|right'}],tokens:[tk('reading','font-body','Be Vietnam Pro'),tk('display','font-display','Playfair Display 600'),tk('ink','on-surface','#241812'),tk('secondary ink','muted','#5E5048')],metrics:[['body1','17 / 1.6'],['h1','40 / 1.1 · -2%'],['overline','12 · +12% · uppercase']]},
+ icon:{name:'Icon',file:RN+'Icon.tsx',desc:'Rounded outline icons (Lucide style) + decorative Vietnamese motifs (cloud, drum, lotus, mai, fret). Icons inherit color; motifs are accessibility-hidden.',props:[{n:'name',t:'IconName'},{n:'size',t:'inline|default|large',def:'default'},{n:'color',t:'token',def:'currentColor'}],tokens:[tk('stroke','icon-stroke','1.9'),tk('size','icon-size','24'),tk('inline','icon-inline','18')],metrics:[['caps','round'],['joins','round'],['touch area','48 (icon ≠ target)']]},
+ button:{name:'Button',file:RN+'Button.tsx',desc:'variant contained/tonal/outlined/text × color primary/secondary/error × size sm/md/lg. Press: scale .96 spring + ripple; disabled uses sunken fill.',props:[{n:'label',t:'string'},{n:'onPress',t:'() => void'},{n:'variant',t:'contained|tonal|outlined|text',def:'contained'},{n:'color',t:'primary|secondary|error',def:'primary'},{n:'size',t:'sm|md|lg',def:'md'},{n:'startIcon',t:'IconName?'},{n:'loading',t:'boolean',def:'false'},{n:'disabled',t:'boolean',def:'false'}],tokens:[tk('fill','primary','#9B1B1E'),tk('label','on-primary','#FFFFFF'),tk('pressed/hover','primary-strong','#7A1215'),tk('tonal fill','primary-container','#F6DEDB'),tk('secondary fill','secondary','#7A1215'),tk('error','error','#B3362F'),tk('disabled fill','surface-sunken','#EEE4D2'),tk('motion','ease-spring','cubic-bezier(.34,1.45,.5,1)')],metrics:[['radius','r-md 14 (lg 20)'],['height','sm 40 · md 48 · lg 56'],['padding','h 20'],['border','1.5 (outlined)']]},
+ buttongroup:{name:'Button group',file:RN+'ButtonGroup.tsx',desc:'Related exclusive actions sharing one red outline; selected uses primary-container.',props:[{n:'options',t:'{value,label}[]'},{n:'value',t:'string'},{n:'onChange',t:'(v) => void'}],tokens:[tk('outline','primary','#9B1B1E'),tk('selected','primary-container','#F6DEDB')],metrics:[['radius','r-md 14'],['height','48']]},
+ iconbutton:{name:'Icon button',file:RN+'IconButton.tsx',desc:'standard/filled/tonal/outlined; toggle fills and pops. Always 48×48 with accessibilityLabel; optional badge.',props:[{n:'icon',t:'IconName'},{n:'label',t:'string (a11y)'},{n:'variant',t:'standard|filled|tonal|outlined',def:'standard'},{n:'selected',t:'boolean?'},{n:'badgeCount',t:'number?'}],tokens:[tk('icon','muted','#5E5048'),tk('filled','primary','#9B1B1E'),tk('tonal','primary-container','#F6DEDB'),tk('selected','secondary','#7A1215')],metrics:[['size','48'],['radius','full'],['press','scale .9']]},
+ fab:{name:'Floating action button',file:RN+'Fab.tsx',desc:'Deep red, the single add action of a screen. regular 56 / small 40 / large 96 / extended with label. Lifts on hover, compresses on press.',props:[{n:'icon',t:'IconName',def:'plus'},{n:'label',t:'string?',d:'extended when set'},{n:'size',t:'sm|md|lg',def:'md'},{n:'onPress',t:'() => void'}],tokens:[tk('fill','secondary','#7A1215'),tk('icon','on-secondary','#FFFFFF'),tk('elevation','elev-2','shadow')],metrics:[['size','56 (40/96)'],['radius','r-lg 20 · extended full'],['offset','16 from edges, above tab bar']]},
+ checkbox:{name:'Checkbox',file:RN+'Checkbox.tsx',desc:'Checked / unchecked / indeterminate / disabled; mark springs in.',props:[{n:'checked',t:'boolean|"indeterminate"'},{n:'label',t:'string'},{n:'onChange',t:'(v) => void'},{n:'disabled',t:'boolean',def:'false'}],tokens:[tk('box border','outline','#8F8277'),tk('checked','primary','#9B1B1E'),tk('mark','on-primary','#FFFFFF')],metrics:[['box','24 · r 7'],['row','min 48']]},
+ radio:{name:'Radio group',file:RN+'RadioGroup.tsx',desc:'One choice from a short list; inner dot springs.',props:[{n:'options',t:'{value,label,disabled?}[]'},{n:'value',t:'string'},{n:'onChange',t:'(v) => void'}],tokens:[tk('ring','outline','#8F8277'),tk('selected','primary','#9B1B1E')],metrics:[['dot','24 / inner 12'],['row','min 48']]},
+ switch:{name:'Switch',file:RN+'Switch.tsx',desc:'Track turns red, thumb springs 20px and stretches on press.',props:[{n:'value',t:'boolean'},{n:'onChange',t:'(v) => void'},{n:'label',t:'string'},{n:'description',t:'string?'}],tokens:[tk('track off','surface-sunken','#EEE4D2'),tk('track on','primary','#9B1B1E'),tk('thumb on','on-primary','#FFFFFF')],metrics:[['track','52×32'],['thumb','20 (26 pressed)']]},
+ select:{name:'Select',file:RN+'SelectField.tsx',desc:'Field opening a large bottom-sheet list (56px rows). Used for lunar day/month and year.',props:[{n:'label',t:'string'},{n:'value',t:'T'},{n:'options',t:'{value,label}[]'},{n:'onChange',t:'(v) => void'},{n:'error',t:'string?'}],tokens:[tk('border','outline','#8F8277'),tk('focus','primary','#9B1B1E'),tk('selected row','primary-container','#F6DEDB')],metrics:[['field','min 56 · r-md'],['row','48–56']]},
+ autocomplete:{name:'Autocomplete',file:RN+'Autocomplete.tsx',desc:'Text field with a filtered suggestion popover; matched text highlighted in accent-container.',props:[{n:'label',t:'string'},{n:'query',t:'string'},{n:'options',t:'T[]'},{n:'renderOption',t:'(T) => node'},{n:'onSelect',t:'(T) => void'}],tokens:[tk('highlight','accent-container','#F6EBCF'),tk('highlight ink','accent-ink','#6E5011'),tk('popover','elev-3','shadow')],metrics:[['row','48'],['popover radius','r-md 14']]},
+ slider:{name:'Slider',file:RN+'Slider.tsx',desc:'continuous/discrete, single/range, with value label. Knob grows on touch.',props:[{n:'value',t:'number|[number,number]'},{n:'min',t:'number'},{n:'max',t:'number'},{n:'step',t:'number?'},{n:'onChange',t:'(v) => void'}],tokens:[tk('rail','surface-sunken','#EEE4D2'),tk('fill','primary','#9B1B1E'),tk('knob','surface','#FFFFFF')],metrics:[['rail','6'],['knob','26 · border 3'],['touch','48']]},
+ textfield:{name:'Text field',file:RN+'TextField.tsx',desc:'outlined/filled/standard. Visible label above; helper or error below its own field; focus adds a 2px red border and soft halo.',props:[{n:'label',t:'string'},{n:'value',t:'string'},{n:'variant',t:'outlined|filled|standard',def:'outlined'},{n:'error',t:'string?'},{n:'helper',t:'string?'},{n:'startIcon',t:'IconName?'},{n:'endAdornment',t:'node?'},{n:'disabled',t:'boolean',def:'false'}],tokens:[tk('border','outline','#8F8277'),tk('focus','primary','#9B1B1E'),tk('error','error','#B3362F'),tk('error ink','error-ink','#8F2A24'),tk('placeholder','subtle','#8A7D72'),tk('disabled fill','surface-sunken','#EEE4D2')],metrics:[['height','56'],['radius','r-md 14'],['border','1.5 · focus 2'],['font','17']]},
+ togglebutton:{name:'Toggle button',file:RN+'Segmented.tsx',desc:'Exclusive choice on a sunken track; selected face lifts with elev-1 (e.g. Dương lịch / Âm lịch).',props:[{n:'options',t:'{value,label,icon?}[]'},{n:'value',t:'string'},{n:'onChange',t:'(v) => void'}],tokens:[tk('track','surface-sunken','#EEE4D2'),tk('selected face','surface','#FFFFFF'),tk('selected ink','primary-ink','#9B1B1E')],metrics:[['height','44 inside 52 track'],['radius','r-md / r-sm']]},
+ rating:{name:'Rating',file:RN+'Rating.tsx',desc:'Five stars in gold; not used in MVP (reserved for rating a gathering).',props:[{n:'value',t:'0–5'},{n:'readOnly',t:'boolean',def:'false'}],tokens:[tk('on','accent','#B8862B'),tk('off','border','#E4D7C2')],metrics:[['star','26'],['gap','2']]},
+ avatar:{name:'Avatar',file:RN+'Avatar.tsx',desc:'Initials on four heritage tints (red, deep red, gold, indigo); gold ring marks the subject of an event; group overlaps 10px.',props:[{n:'name',t:'string'},{n:'size',t:'sm|md|lg',def:'md'},{n:'tone',t:'1|2|3|4',def:'auto'},{n:'ring',t:'boolean',def:'false'}],tokens:[tk('tone 1','primary-container','#F6DEDB'),tk('tone 2','secondary-container','#F6DEDB'),tk('tone 3','accent-container','#F6EBCF'),tk('ring','accent','#B8862B')],metrics:[['size','32 / 44 / 72'],['overlap','-10']]},
+ badge:{name:'Badge',file:RN+'Badge.tsx',desc:'Deep-red count (9+ cap) or dot, with a surface ring; pops in.',props:[{n:'count',t:'number?'},{n:'dot',t:'boolean',def:'false'}],tokens:[tk('fill','secondary','#7A1215'),tk('text','on-secondary','#FFFFFF')],metrics:[['size','20 (dot 10)'],['font','12 / 600']]},
+ chip:{name:'Chip',file:RN+'Chip.tsx',desc:'filled/outlined; filter (selected = red + check), input (deletable, avatar), assist (leading icon).',props:[{n:'label',t:'string'},{n:'variant',t:'filled|outlined',def:'filled'},{n:'selected',t:'boolean?'},{n:'onDelete',t:'() => void?'},{n:'icon',t:'IconName?'},{n:'size',t:'sm|md',def:'md'}],tokens:[tk('fill','muted-surface','#F1E8D8'),tk('selected','primary','#9B1B1E'),tk('selected ink','on-primary','#FFFFFF'),tk('outline','border','#E4D7C2')],metrics:[['height','40 (sm 30)'],['radius','full'],['padding','h 16']]},
+ divider:{name:'Divider',file:RN+'Divider.tsx',desc:'full, inset (72 left), with text.',props:[{n:'inset',t:'boolean',def:'false'},{n:'text',t:'string?'}],tokens:[tk('line','border','#E4D7C2')],metrics:[['thickness','1'],['inset','72']]},
+ list:{name:'List',file:RN+'ListRow.tsx',desc:'One/two/three-line rows with leading tile/avatar and trailing meta; separated by faint hairlines inside one surface.',props:[{n:'title',t:'string'},{n:'subtitle',t:'string?'},{n:'lines',t:'1|2|3',def:'2'},{n:'leading',t:'node?'},{n:'trailing',t:'node?'},{n:'onPress',t:'() => void?'}],tokens:[tk('surface','surface','#FFFFFF'),tk('separator','border-faint','#EFE6D6'),tk('pressed','muted-surface','#F1E8D8'),tk('subheader','accent-ink','#6E5011')],metrics:[['min height','64'],['padding','12 / 16'],['gap','16']]},
+ table:{name:'Table',file:RN+'Table.tsx',desc:'Dense reference data; tabular numerals, right-aligned numbers.',props:[{n:'columns',t:'{key,label,numeric?}[]'},{n:'rows',t:'object[]'}],tokens:[tk('header','muted-surface','#F1E8D8'),tk('row line','border-faint','#EFE6D6')],metrics:[['cell padding','12 / 16'],['radius','r-lg 20']]},
+ tooltip:{name:'Tooltip',file:RN+'Tooltip.tsx',desc:'plain (inverse surface) and rich (surface, title + body). Long-press on mobile.',props:[{n:'title',t:'string'},{n:'body',t:'string?'},{n:'variant',t:'plain|rich',def:'plain'}],tokens:[tk('plain','inverse-surface','#241812'),tk('plain ink','inverse-on-surface','#F7F0E3'),tk('rich','surface','#FFFFFF')],metrics:[['radius','6 / 14'],['max width','260']]},
+ alert:{name:'Alert',file:RN+'Alert.tsx',desc:'standard (tinted container + ink) and filled; success/info/warning/error, icon + optional title.',props:[{n:'severity',t:'success|info|warning|error'},{n:'variant',t:'standard|filled',def:'standard'},{n:'title',t:'string?'},{n:'children',t:'string'}],tokens:[tk('success','success-container','#E1EEE4'),tk('info','info-container','#E1E8F3'),tk('warning','warning-container','#FBEFD6'),tk('error','error-container','#F8E2E0')],metrics:[['radius','r-md 14'],['padding','12 / 16']]},
+ dialog:{name:'Dialog',file:RN+'Dialog.tsx',desc:'basic (icon, title in display face, body, actions right) and full-screen (close + title + save). Springs in over the backdrop.',props:[{n:'open',t:'boolean'},{n:'title',t:'string'},{n:'body',t:'string'},{n:'icon',t:'IconName?'},{n:'actions',t:'{label,onPress,variant?,color?}[]'},{n:'fullScreen',t:'boolean',def:'false'}],tokens:[tk('surface','surface','#FFFFFF'),tk('elevation','elev-3','shadow'),tk('scrim','scrim','rgb(26 14 10/.6)'),tk('destructive','error','#B3362F')],metrics:[['width','320'],['radius','r-xl 28'],['padding','24']]},
+ snackbar:{name:'Snackbar',file:RN+'Snackbar.tsx',desc:'Inverse surface, one optional gold action (Hoàn tác). Rises above the tab bar, 4s.',props:[{n:'message',t:'string'},{n:'actionLabel',t:'string?'},{n:'onAction',t:'() => void?'}],tokens:[tk('surface','inverse-surface','#241812'),tk('text','inverse-on-surface','#F7F0E3'),tk('action','accent-bright','#E0B552')],metrics:[['min height','52'],['radius','r-md 14'],['max width','360']]},
+ progress:{name:'Progress',file:RN+'Progress.tsx',desc:'linear/circular × determinate/indeterminate.',props:[{n:'variant',t:'linear|circular'},{n:'value',t:'0–100?',d:'indeterminate when omitted'}],tokens:[tk('track','surface-sunken','#EEE4D2'),tk('bar','primary','#9B1B1E')],metrics:[['linear','6'],['circular','40 · stroke 4']]},
+ skeleton:{name:'Skeleton',file:RN+'Skeleton.tsx',desc:'Paper shimmer in the shape of the content (rect / circle / text).',props:[{n:'shape',t:'rect|circle|text',def:'rect'},{n:'width',t:'number|%'},{n:'height',t:'number'}],tokens:[tk('base','surface-sunken','#EEE4D2'),tk('sheen','border-faint','#EFE6D6')],metrics:[['speed','1.6s linear'],['radius','r-sm']]},
+ backdrop:{name:'Backdrop',file:RN+'Backdrop.tsx',desc:'Đỏ son-tinted scrim behind dialogs, sheets and drawer; fades 280ms.',props:[{n:'open',t:'boolean'},{n:'onPress',t:'() => void?'}],tokens:[tk('scrim','scrim','rgb(26 14 10/.6)')],metrics:[['fade','dur-base 280']]},
+ appbar:{name:'App bar',file:RN+'AppBar.tsx',desc:'small (paper) for inner screens, center (forms), large = the red band (see Đỏ son band).',props:[{n:'title',t:'string'},{n:'variant',t:'small|center|large',def:'small'},{n:'leading',t:'node?'},{n:'actions',t:'node?'}],tokens:[tk('small bg','bg','#F7F0E3'),tk('large bg','primary-strong','#7A1215'),tk('large ink','on-band','#FFFFFF')],metrics:[['height','64'],['title','20 / 600']]},
+ card:{name:'Card',file:RN+'Card.tsx',desc:'elevated/outlined/filled + petal (one sharp corner) for the single feature card per screen. Interactive: lift 2px, press .98.',props:[{n:'variant',t:'elevated|outlined|filled|petal',def:'elevated'},{n:'onPress',t:'() => void?'},{n:'children',t:'node'}],tokens:[tk('surface','surface','#FFFFFF'),tk('filled','muted-surface','#F1E8D8'),tk('outline','border','#E4D7C2'),tk('elevation','elev-1 / elev-2','shadow')],metrics:[['radius','r-lg 20 · petal 28/28/28/8'],['padding','16']]},
+ paper:{name:'Paper',file:RN+'Paper.tsx',desc:'Raw surface at elevation 0–3; base of cards, menus, sheets.',props:[{n:'elevation',t:'0|1|2|3',def:'1'},{n:'radius',t:'radius token',def:'r-md'}],tokens:[tk('surface','surface','#FFFFFF'),tk('shadow ink','shadow-ink','58 24 14')],metrics:[['levels','4 (MUI 0–24 mapped)']]},
+ accordion:{name:'Accordion',file:RN+'Accordion.tsx',desc:'Expandable rows; chevron rotates 180° with spring, body height animates.',props:[{n:'items',t:'{title,icon?,body}[]'},{n:'multiple',t:'boolean',def:'false'}],tokens:[tk('surface','surface','#FFFFFF'),tk('separator','border-faint','#EFE6D6')],metrics:[['header','60'],['body inset','52']]},
+ bottomnav:{name:'Bottom navigation',file:'src/app/navigation/TabBar.tsx',desc:'Four tabs, icon + label always. Đỏ son pill springs to the selected item. Content sits above the system gesture inset (paddingBottom = inset).',props:[{n:'items',t:'{key,label,icon}[]'},{n:'value',t:'string'},{n:'onChange',t:'(k) => void'}],tokens:[tk('surface','surface','#FFFFFF'),tk('selected pill','primary-container','#F6DEDB'),tk('selected ink','primary-ink','#9B1B1E'),tk('idle ink','muted','#5E5048')],metrics:[['height','76 + safe-area bottom'],['pill','60×32'],['label','12']]},
+ drawer:{name:'Drawer',file:RN+'Drawer.tsx',desc:'Modal family switcher; selected item on primary-container, section labels in accent ink.',props:[{n:'open',t:'boolean'},{n:'items',t:'{key,label,icon}[]'},{n:'value',t:'string'}],tokens:[tk('surface','surface','#FFFFFF'),tk('selected','primary-container','#F6DEDB'),tk('section','accent-ink','#6E5011')],metrics:[['width','280'],['item','52 · full radius'],['corner','r-xl right']]},
+ tabs:{name:'Tabs',file:RN+'Tabs.tsx',desc:'fixed/scrollable; 3px red indicator slides with a spring.',props:[{n:'tabs',t:'{key,label}[]'},{n:'value',t:'string'},{n:'scrollable',t:'boolean',def:'false'}],tokens:[tk('indicator','primary','#9B1B1E'),tk('selected','primary-ink','#9B1B1E'),tk('idle','muted','#5E5048')],metrics:[['height','48'],['indicator','3']]},
+ menu:{name:'Menu',file:RN+'Menu.tsx',desc:'Dropdown from a more-button; icon rows, separator, destructive item in error ink.',props:[{n:'items',t:'{label,icon?,danger?,onPress}[]'},{n:'anchor',t:'ref'}],tokens:[tk('surface','surface','#FFFFFF'),tk('elevation','elev-3','shadow'),tk('danger','error-ink','#8F2A24')],metrics:[['row','48'],['radius','r-md 14']]},
+ link:{name:'Link',file:RN+'Link.tsx',desc:'Đỏ son ink with a soft underline that firms on press.',props:[{n:'children',t:'string'},{n:'onPress',t:'() => void'}],tokens:[tk('ink','link','#9B1B1E')],metrics:[['weight','600'],['underline offset','3']]},
+ stepper:{name:'Stepper',file:RN+'Stepper.tsx',desc:'Horizontal steps; done = red + check, active pulses gold.',props:[{n:'steps',t:'string[]'},{n:'active',t:'number'}],tokens:[tk('done','primary','#9B1B1E'),tk('idle','surface-sunken','#EEE4D2'),tk('pulse','accent','#B8862B')],metrics:[['node','32'],['line','2']]},
+ speeddial:{name:'Speed dial',file:RN+'SpeedDial.tsx',desc:'Deep-red FAB rotates its plus 45° and fans labelled small actions with a 60ms stagger.',props:[{n:'actions',t:'{label,icon,onPress}[]'},{n:'open',t:'boolean'}],tokens:[tk('main','secondary','#7A1215'),tk('action','surface','#FFFFFF'),tk('action ink','primary-ink','#9B1B1E')],metrics:[['gap','12'],['stagger','60ms']]},
+ band:{name:'Đỏ son band (signature header)',file:RN+'Đỏ sonBand.tsx',desc:'The one expressive surface per screen: black-lacquer gradient (band-from → band-to), slowly rotating trống đồng (40s), drifting mây lành (9s), gold hồi văn fret on the bottom edge. Motifs are decorative and hidden from accessibility; all motion stops under Reduce Motion.',props:[{n:'eyebrow',t:'string'},{n:'headline',t:'string'},{n:'children',t:'node?',d:'e.g. week strip overlapping the edge'},{n:'festive',t:'boolean',def:'false',d:'Tết petals'}],tokens:[tk('from','band-from','#7A1215'),tk('to','band-to','#9B1B1E'),tk('ink','on-band','#FFFFFF'),tk('muted ink','on-band-muted','#C9B593'),tk('motif / fret','accent-bright / accent','#E0B552')],metrics:[['padding','16 / 20 / 32'],['headline','Playfair 30'],['fret','10 high']]},
+ tolich:{name:'Tờ lịch bóc (tear-off sheet)',file:'src/features/home/components/TearOffSheet.tsx',desc:'Home hero. Red binding (month · year, can chi), perforated edge, day 132px Playfair in #B3201F, weekday tracked caps, lunar date + countdown split by a rule, proverb in italic display, stacked sheets and a curled corner. Tap: tear away (rotateX 70deg, 650ms) then the next sheet rises; plays mõ when sound is on.',props:[{n:'date',t:'IsoDate'},{n:'lunar',t:'LunarDate'},{n:'next',t:'{days,label}?'},{n:'proverb',t:'string'},{n:'onTear',t:'() => void'}],tokens:[tk('binding','primary','#9B1B1E'),tk('day ink','tolich-day','#B3201F'),tk('paper','surface','#FFFDF8'),tk('rules','border','#E4D7C2'),tk('labels','accent-ink','#6E5011')],metrics:[['day','132 / Playfair 600'],['radius','4 top · 10 bottom'],['tear','650ms']]},
+ lacquercard:{name:'Lacquer card',file:RN+'LacquerCard.tsx',desc:'Black lacquer gradient with a gold hairline for solemn events (ngày giỗ); gold countdown. One per screen.',props:[{n:'title',t:'string'},{n:'subtitle',t:'string'},{n:'icon',t:'IconName',def:'flame'},{n:'days',t:'number?'}],tokens:[tk('from','band-from','#1F110D'),tk('to','band-to','#2E1712'),tk('ink','on-band','#F6E7C8'),tk('gold','accent-bright','#E0B552')],metrics:[['radius','r-lg 20'],['padding','16'],['hairline','1px gold 35%']]},
+ drum3d:{name:'Trống đồng 3D',file:'design-system/drum3d.js (mobile: GLB via react-native-filament, or a pre-rendered turntable)',desc:'Procedural Đông Sơn bronze drum: lathe body + canvas-engraved face (14-ray star, bands, 18 Lạc birds), aged bronze PBR, warm altar key light, red bounce. Slow spin; strike() boosts spin. Still under Reduce Motion; SVG fallback.',props:[{n:'tilt',t:'radians',def:'0.5'},{n:'speed',t:'rad/s',def:'0.12'},{n:'distance',t:'number',def:'3.4'}],tokens:[tk('bronze','bronze','#8a6431'),tk('engraving','bronze-dark','#4a3015'),tk('patina','patina','#5f7f63')],metrics:[['segments','128'],['texture','1024 px'],['exposure','0.9 ACES']]},
+ sounds:{name:'Âm thanh',file:'design-system/sounds/*.wav',desc:'trong.wav (bronze drum, 2.6s), mo.wav (wooden fish tap, 0.3s), chuong.wav (temple bell, 3.2s). Synthesized; off by default; never autoplay.',props:[{n:'enabled',t:'boolean',def:'false'}],tokens:[{r:'drum f0',n:'trong',v:'68 Hz'},{r:'bell',n:'chuong',v:'660 Hz'}],metrics:[['format','WAV 44.1k mono'],['volume','drum .8 · others .6']]},
+ eventtype:{name:'Event type',file:RN+'EventType.tsx',desc:'Icon + pigment per type (birthday cake/vàng hoè, death flame/trầm, wedding heart/hồng, family users/ngọc, important star/chàm, holiday flag/son). Tile 48 and badge.',props:[{n:'type',t:'BIRTHDAY|DEATH_ANNIVERSARY|WEDDING_ANNIVERSARY|FAMILY_EVENT|IMPORTANT_DAY|HOLIDAY'},{n:'as',t:'tile|badge',def:'tile'}],tokens:[tk('birthday','ev-birthday','#6E5011'),tk('death','ev-death','#3A2418'),tk('wedding','ev-wedding','#A8435A'),tk('family','ev-family','#1F6F64'),tk('important','ev-important','#3B5A8C'),tk('holiday','ev-holiday','#9B1B1E')],metrics:[['tile','48 · r-md'],['badge','28 · full']]},
+ countdown:{name:'Countdown',file:RN+'Countdown.tsx',desc:'Days left with the number in the display face; solid deep red within 3 days.',props:[{n:'days',t:'number'}],tokens:[tk('far','secondary-container','#F6DEDB'),tk('soon','secondary','#7A1215')],metrics:[['number','Playfair 20'],['pill','full']]},
+ daycell:{name:'Lunar day cell',file:'src/features/calendar/components/DayCell.tsx',desc:'Solar day 18/600, lunar 11. Mùng 1 & rằm: gold ring mark + accent-ink lunar. Today: solid red + gold pulse ring. Sunday: deep red. Up to 3 event dots. Press scale .92.',props:[{n:'date',t:'IsoDate'},{n:'lunar',t:'{day,month,leap}'},{n:'mode',t:'SOLAR|LUNAR',def:'SOLAR'},{n:'today',t:'boolean'},{n:'selected',t:'boolean'},{n:'eventTypes',t:'EventType[]'}],tokens:[tk('today','primary','#9B1B1E'),tk('mark','accent','#B8862B'),tk('mark ink','accent-ink','#6E5011'),tk('sunday','secondary-ink','#7A1215'),tk('selected ring','primary','#9B1B1E')],metrics:[['height','60'],['radius','r-sm 10'],['dot','6']]},
+ monthgrid:{name:'Month grid',file:'src/features/calendar/components/MonthGrid.tsx',desc:'Monday-first 7-column grid of day cells; horizontal swipe changes month with slide + fade (Gesture Handler + Reanimated).',props:[{n:'year',t:'number'},{n:'month',t:'number'},{n:'selected',t:'IsoDate'},{n:'onSelect',t:'(d) => void'},{n:'onSwipe',t:'(dir) => void'}],tokens:[tk('weekday','muted','#5E5048'),tk('sunday','secondary-ink','#7A1215')],metrics:[['gap','4'],['rows','5–6']]},
+ weekstrip:{name:'Week strip',file:'src/features/home/components/WeekStrip.tsx',desc:'Seven lifted day cells overlapping the bottom of the red band on Home.',props:[{n:'start',t:'IsoDate'},{n:'today',t:'IsoDate'}],tokens:[tk('cell','surface','#FFFFFF'),tk('elevation','elev-1','shadow')],metrics:[['cell','68 high'],['gap','4']]},
+ petals:{name:'Tết petals',file:RN+'PetalRain.tsx',desc:'Falling hoa mai over the band only from 23 tháng Chạp to mùng 7 Tết; 6 petals, 7s, sway via --dx. Not rendered under Reduce Motion.',props:[{n:'active',t:'boolean'}],tokens:[tk('petal','accent','#B8862B'),tk('heart','ev-death','#3A2418')],metrics:[['count','6'],['duration','7s']]}
+};
+
+/* ===== Copy-as-prompt (React Native first: the user's stated framework) ===== */
+const LANGS=['React Native (TypeScript)','React (TypeScript + CSS)','Flutter (Dart)','SwiftUI','Jetpack Compose (Kotlin)','HTML + CSS'];
+let promptLang=LANGS[0];
+langSel.innerHTML=LANGS.map(l=>`<option${l===promptLang?' selected':''}>${l}</option>`).join('');
+langSel.onchange=()=>promptLang=langSel.value;
+const varGroups={
+ 'Color roles (keep every fill paired with its --on-*)':['--primary','--on-primary','--primary-strong','--primary-container','--on-primary-container','--primary-ink','--secondary','--on-secondary','--secondary-container','--on-secondary-container','--secondary-ink','--accent','--on-accent','--accent-bright','--accent-container','--accent-ink','--bg','--on-bg','--surface','--on-surface','--surface-sunken','--muted-surface','--on-muted-surface','--muted','--subtle','--disabled','--outline','--border','--border-faint','--on-band','--on-band-muted','--success','--on-success','--success-container','--success-ink','--error','--on-error','--error-container','--error-ink','--warning','--on-warning','--warning-container','--warning-ink','--info','--on-info','--info-container','--info-ink','--link','--scrim','--inverse-surface','--inverse-on-surface'],
+ 'Event pigments':['--ev-birthday','--ev-birthday-bg','--ev-death','--ev-death-bg','--ev-wedding','--ev-wedding-bg','--ev-family','--ev-family-bg','--ev-important','--ev-important-bg','--ev-holiday','--ev-holiday-bg'],
+ 'Spacing':['--gap-related','--gap-section','--gap-major','--layout-gutter','--target-min','--sp-2','--sp-4','--sp-8','--sp-12','--sp-16','--sp-20','--sp-24','--sp-32','--sp-48','--sp-64'],
+ 'Radius':['--r-xs','--r-sm','--r-md','--r-lg','--r-xl','--r-full','--r-petal'],
+ 'Elevation':['--elev-0','--elev-1','--elev-2','--elev-3'],
+ 'Signature':['--signature','--band-from','--band-to','--focus-ring'],
+ 'Type families':['--font-display','--font-body','--font-mono'],
+ 'Motion':['--dur-fast','--dur-base','--dur-slow','--dur-ambient','--ease','--ease-spring','--ease-out-soft','--stagger'],
+ 'Icons':['--icon-size','--icon-inline','--icon-large','--icon-stroke','--icon-cap','--icon-join']};
+function tokenLines(){const cs=getComputedStyle(document.documentElement);const out=[];for(const[g,names]of Object.entries(varGroups)){const rows=names.map(n=>{const v=cs.getPropertyValue(n).trim();return v?`- ${n} = ${v}`:null}).filter(Boolean);if(rows.length)out.push(`### ${g}`,...rows,'')}return out}
+function foundationsBody(){const L=[`## Foundations — design tokens (single source of truth)`,`Define every token below as a named constant in ONE theme file, idiomatic to ${promptLang} (e.g. src/shared/theme/*.ts). Components reference tokens by name — never inline raw values.`,'',...tokenLines(),`### Type scale`];TYPE.forEach(([n,m])=>L.push(`- ${n}: ${m}`));L.push('',`### Rules`,`- Every fill stays paired with its --on-* foreground (WCAG-checked, body ≥ 4.5:1).`,`- Đỏ son (primary) leads interaction; black lacquer marks solemn days (ngày giỗ); son thẫm (secondary) is for counts and the add FAB; gold draws lines and rings, never small text on light.`,`- The red band is the one sanctioned gradient and the one expressive surface per screen; everything else is flat paper.`,`- Motion: content rises with a 70ms stagger, controls spring, motifs drift; everything rests under Reduce Motion (Reanimated useReducedMotion).`,`- Touch targets ≥ 48; body text 17; respect system font scale up to 1.6×.`);return L.join('\n')}
+function buildPrompt(key){const s=SPECS[key];const L=[`# Add or update the \`${s.name}\` component — ${promptLang}`,'',`A component from the FamilyHub design system ("Đỏ son sơn mài"). If a component with this role ALREADY EXISTS, modify it IN PLACE to match this spec (the source of truth) — don't duplicate; note breaking changes. Otherwise create it at \`${s.file}\`, reusing existing tokens/atoms.`,'',`## What it is`,s.desc,'',`## Props`];s.props.forEach(p=>L.push(`- \`${p.n}\`: ${p.t}${p.def?` (default ${p.def})`:''}${p.d?` — ${p.d}`:''}`));L.push('',`## Design tokens (from the theme; never inline)`);s.tokens.forEach(t=>L.push(`- ${t.n} = ${t.v}   // ${t.r}`));L.push('',`## Metrics`);s.metrics.forEach(([k,v])=>L.push(`- ${k}: ${v}`));L.push('',`## Requirements`,`- Implement every variant/state listed, with accessibilityRole/label/state.`,`- Reference tokens by name; keep each fill paired with its --on-* foreground.`,`- Animations with Reanimated; respect Reduce Motion.`,`- Output complete, compilable ${promptLang} code + a short usage example.`);return L.join('\n')}
+function fullSystemPrompt(){const keys=Object.keys(SPECS);const L=[`# Install or update the ENTIRE FamilyHub design system — ${promptLang}`,'',`If it doesn't exist yet, scaffold it; if parts exist, update them IN PLACE to match this spec — modify, don't duplicate; list breaking changes.`,'',`## Build order`,`1. Implement the foundation token layer below as the single source of truth.`,`2. Build the components; each imports the shared token layer — never redefine colors/sizes locally.`,`3. Reconcile: one ui/index barrel + a pass confirming only named tokens are used.`,'','---','',foundationsBody(),'','---','',`## Components (${keys.length})`];keys.forEach(k=>{const s=SPECS[k];L.push('',`### ${s.name} — \`${s.file}\``,s.desc,`- props: ${s.props.map(p=>p.n+':'+p.t).join(', ')}`,`- tokens: ${s.tokens.map(t=>t.n).join(', ')}`,`- metrics: ${s.metrics.map(m=>m[0]+' '+m[1]).join(', ')}`)});return L.join('\n')}
+function copyText(t){navigator.clipboard&&navigator.clipboard.writeText(t)}
+function copyPrompt(key){copyText(buildPrompt(key));toast(`Copied: ${SPECS[key].name} → ${promptLang}`)}
+function copyFullSystem(){copyText(fullSystemPrompt());toast(`Copied: Install design system (${Object.keys(SPECS).length} components) → ${promptLang}`)}
+document.querySelectorAll('main section[id]').forEach(sec=>{const key=sec.id;if(!SPECS[key])return;const h=sec.querySelector('h2.sec');if(!h||h.querySelector('.sec-prompt'))return;const b=document.createElement('button');b.className='sec-prompt';b.type='button';b.textContent='Copy as prompt';b.addEventListener('click',()=>copyPrompt(key));h.appendChild(b)});
+
+/* ===== Dev Mode + Inspector ===== */
+function toggleDev(){const on=document.body.classList.toggle('dev');devToggle.classList.toggle('on',on);devToggle.textContent=on?'◧ Dev Mode · ON':'◧ Dev Mode';if(!on)closeInspector()}
+function closeInspector(){document.body.classList.remove('inspecting');document.querySelectorAll('.insp-sel').forEach(e=>e.classList.remove('insp-sel'))}
+document.addEventListener('click',e=>{if(e.target.closest('#inspector')||e.target.closest('#topctl'))return;if(!document.body.classList.contains('dev'))return;const el=e.target.closest('[data-insp]');if(el&&SPECS[el.dataset.insp]){e.preventDefault();selectComp(el,el.dataset.insp)}},true);
+function selectComp(el,key){document.querySelectorAll('.insp-sel').forEach(x=>x.classList.remove('insp-sel'));el.classList.add('insp-sel');document.body.classList.add('inspecting');const s=SPECS[key];
+ const props=s.props.map(p=>`<div class="prop"><span class="pn">${p.n}</span> <span class="pt">${p.t}</span>${p.def?` <span class="pdef">= ${p.def}</span>`:''}</div>`).join('');
+ const toks=s.tokens.map(t=>`<div class="tok" onclick="copyVal('${t.v}')"><div class="tsw" style="background:${t.c||'var(--bg)'}"></div><div><div class="tn">${t.n}</div><div class="tr">${t.r}</div></div><div class="tv">${t.v}</div></div>`).join('');
+ const mets=s.metrics.map(([k,v])=>`<div class="metric"><span class="mk">${k}</span><span>${v}</span></div>`).join('');
+ inspectorBody.innerHTML=`<div class="nm">${s.name}</div><div class="file">${s.file}</div><div class="desc">${s.desc}</div><h4>Properties</h4>${props}<h4>Design tokens · click to copy</h4>${toks}<h4>Metrics</h4>${mets}<button class="copyprompt" onclick="copyPrompt('${key}')">Copy as prompt</button>`}
+function copyVal(v){copyText(v);toast('Copied '+v)}
+document.addEventListener('click',e=>{if(document.body.classList.contains('dev'))return;const b=e.target.closest('[data-sound]');if(b)new Audio('sounds/'+b.dataset.sound+'.wav').play().catch(()=>{});const t=e.target.closest('#demoSheet');if(t){t.classList.remove('is-new');void t.offsetWidth;t.classList.add('is-tearing');setTimeout(()=>{t.classList.remove('is-tearing');void t.offsetWidth;t.classList.add('is-new')},650)}});
+import('./drum3d.js').then(({mountDrum})=>document.querySelectorAll('.drum3d').forEach(slot=>{try{mountDrum(slot.querySelector('canvas'),{tilt:.42,speed:.14,distance:4.2});slot.classList.add('is-live')}catch(err){console.warn(err)}})).catch(err=>console.warn('3D drum unavailable',err));
+function toast(m){const c=document.getElementById('copied');c.textContent=m;c.classList.add('show');setTimeout(()=>c.classList.remove('show'),1300)}
+</script>
+</body>
+</html>

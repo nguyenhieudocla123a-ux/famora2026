@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FamilyHub · Concept · Đỏ son sơn mài</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,500&display=swap&subset=vietnamese" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js"}}</script>
+<style>
+/* concept-page chrome + layout glue only — screens are built from styles.css components */
+body{font-family:var(--font-body);color:var(--on-surface);background:#E9DFCF;padding:36px 24px 80px;display:flex;flex-direction:column;align-items:center}
+.head{max-width:760px;text-align:center;margin-bottom:28px}
+.head h1{font:600 30px var(--font-display);color:var(--primary-ink)}
+.head p{color:var(--muted);font-size:15px;margin-top:8px;line-height:1.6}
+.two{display:flex;gap:44px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px}
+.col .label{font:600 11px var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+.device{position:relative;width:375px;height:812px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 var(--border)}
+.scrollbody{flex:1;overflow:auto;padding-bottom:110px}
+.scrollbody::-webkit-scrollbar{width:0}
+.device .bottomnav{position:absolute;left:0;right:0;bottom:0;z-index:var(--z-appbar)}
+.device .fab{position:absolute;right:20px;bottom:96px;z-index:var(--z-fab)}
+.backlink{position:fixed;top:18px;left:18px;z-index:50;display:inline-flex;align-items:center;gap:6px;font:600 13px var(--font-body);text-decoration:none;color:var(--primary-ink);background:var(--surface);border-radius:999px;padding:8px 14px;box-shadow:var(--elev-1)}
+.topright{position:fixed;top:18px;right:18px;z-index:50;display:flex;gap:8px}
+.statusbar{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:600 13px var(--font-body);color:var(--on-band)}
+.homeband{padding-bottom:150px}
+.homeband .drum3d{width:300px;height:300px;right:-92px;top:-6px}
+.greet{font:500 15px var(--font-body);color:var(--on-band-muted);margin-top:6px}
+.greet b{display:block;font:600 26px/1.2 var(--font-display);color:var(--on-band)}
+.sheetwrap{margin:-138px var(--layout-gutter) 0;position:relative;z-index:2;perspective:900px}
+.secthead{display:flex;align-items:center;justify-content:space-between;margin:var(--gap-section) 0 var(--sp-12)}
+.monthband{padding-bottom:28px}
+.monthband .drum3d{width:200px;height:200px;right:-48px;top:-4px}
+.monthtitle{display:flex;align-items:baseline;gap:10px;margin-top:4px}
+.monthtitle .t-h2{color:var(--on-band)}
+.monthtitle span{font:500 15px var(--font-body);color:var(--accent-bright)}
+.calcard{position:relative;margin:-14px var(--layout-gutter) 0;z-index:2;background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--elev-2);padding:10px 8px 12px;overflow:hidden}
+.calcard .watermark{position:absolute;width:340px;height:340px;left:50%;top:56%;transform:translate(-50%,-50%);color:var(--accent);opacity:.09;pointer-events:none}
+.calcard .navrow{display:flex;align-items:center;justify-content:space-between;padding:0 4px 6px}
+.daysheet{margin:var(--sp-16) var(--layout-gutter) 0}
+.legend{max-width:760px;margin-top:22px;font:13px var(--font-body);color:var(--muted);line-height:1.7;text-align:center}
+</style>
+</head>
+<body>
+<!--SPRITE:START-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- hồi văn (Vietnamese fret) — tiled along the bottom of the jade band -->
+    <pattern id="p-fret" width="24" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 9H5V1H17V7H9V4H13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+      <path d="M17 9H24" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+  <!-- ===== UI icons: rounded outline, drawn in the style of Lucide/Feather (MIT) ===== -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-more-v" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-cake" viewBox="0 0 24 24"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20M7 8v3M12 8v3M17 8v3M7 4h.01M12 4h.01M17 4h.01"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21l1.2-6.9-5-4.9 6.9-1z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+  <symbol id="i-volume-x" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></symbol>
+
+  <!-- ===== Vietnamese motifs (decorative: aria-hidden, never carry information) ===== -->
+  <!-- mây lành (auspicious cloud) -->
+  <symbol id="m-cloud" viewBox="0 0 120 44"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    <path d="M6 38c3-10 15-13 21-6 1-10 15-15 23-8 5-9 21-8 24 3 9-3 17 3 16 11"/>
+    <path d="M27 32c4 3 1 9-3 7-3-1-2-5 1-5"/><path d="M50 24c5 2 3 9-2 8-4-1-3-6 0-6"/><path d="M74 27c4 3 1 8-3 7-3-1-2-5 1-4"/>
+    <path d="M90 38c6 0 14-2 22 2"/></g></symbol>
+  <!-- mặt trống đồng (Đông Sơn bronze-drum sun, 14 rays) -->
+  <symbol id="m-drum" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="1"><circle cx="50" cy="50" r="48"/><circle cx="50" cy="50" r="42"/><circle cx="50" cy="50" r="37"/><circle cx="50" cy="50" r="29"/>
+    <path d="M81.0 50.0L85.0 50.0M80.5 55.4L84.5 56.1M79.1 60.6L82.9 62.0M76.8 65.5L80.3 67.5M73.7 69.9L76.8 72.5M69.9 73.7L72.5 76.8M65.5 76.8L67.5 80.3M60.6 79.1L62.0 82.9M55.4 80.5L56.1 84.5M50.0 81.0L50.0 85.0M44.6 80.5L43.9 84.5M39.4 79.1L38.0 82.9M34.5 76.8L32.5 80.3M30.1 73.7L27.5 76.8M26.3 69.9L23.2 72.5M23.2 65.5L19.7 67.5M20.9 60.6L17.1 62.0M19.5 55.4L15.5 56.1M19.0 50.0L15.0 50.0M19.5 44.6L15.5 43.9M20.9 39.4L17.1 38.0M23.2 34.5L19.7 32.5M26.3 30.1L23.2 27.5M30.1 26.3L27.5 23.2M34.5 23.2L32.5 19.7M39.4 20.9L38.0 17.1M44.6 19.5L43.9 15.5M50.0 19.0L50.0 15.0M55.4 19.5L56.1 15.5M60.6 20.9L62.0 17.1M65.5 23.2L67.5 19.7M69.9 26.3L72.5 23.2M73.7 30.1L76.8 27.5M76.8 34.5L80.3 32.5M79.1 39.4L82.9 38.0M80.5 44.6L84.5 43.9"/></g>
+    <path fill="currentColor" d="M50.0 26.0L51.6 43.2L60.4 28.4L54.4 44.5L68.8 35.0L56.3 47.0L73.4 44.7L57.0 50.0L73.4 55.3L56.3 53.0L68.8 65.0L54.4 55.5L60.4 71.6L51.6 56.8L50.0 74.0L48.4 56.8L39.6 71.6L45.6 55.5L31.2 65.0L43.7 53.0L26.6 55.3L43.0 50.0L26.6 44.7L43.7 47.0L31.2 35.0L45.6 44.5L39.6 28.4L48.4 43.2Z"/></symbol>
+  <!-- hoa sen (lotus) -->
+  <symbol id="m-lotus" viewBox="0 0 100 90"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z"/>
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z" transform="rotate(-32 50 72)"/>
+    <path d="M50 72C38 54 40 30 50 12C60 30 62 54 50 72Z" transform="rotate(32 50 72)"/>
+    <path d="M50 72C40 58 41 44 47 34" transform="rotate(-62 50 72)"/>
+    <path d="M50 72C60 58 59 44 53 34" transform="rotate(62 50 72)"/>
+    <path d="M22 76Q50 88 78 76"/></g></symbol>
+  <!-- hoa mai (yellow apricot blossom, Tết) -->
+  <symbol id="m-mai" viewBox="0 0 24 24"><g fill="currentColor"><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.5" rx="3.6" ry="5" transform="rotate(288 12 12)"/></g><circle cx="12" cy="12" r="2.4" fill="#9E3B2E"/></symbol>
+</svg>
+<!--SPRITE:END-->
+<a class="backlink" href="index.html"><svg class="ico ico--sm"><use href="#i-back"/></svg> Back to style guide</a>
+<div class="topright">
+  <button class="btn btn-tonal btn-sm" id="soundBtn"><svg class="ico ico--sm"><use href="#i-volume-x"/></svg><span>Âm thanh: tắt</span></button>
+  <button class="btn btn-tonal btn-sm" onclick="location.reload()">Phát lại hiệu ứng</button>
+</div>
+
+<div class="head">
+  <h1>Đỏ son sơn mài — Trang chủ + Lịch tháng</h1>
+  <p>A black-lacquer band with a turning bronze drum (live 3D), a tear-off calendar sheet in đỏ son, gold-leaf lines on dó paper. Tap the sheet to tear it; tap a day; turn sound on to hear the drum, the mõ and the bell. Static sample content.</p>
+</div>
+
+<div class="two">
+
+  <!-- ════════ SCREEN 1 · Trang chủ — tờ lịch bóc over the lacquer band, 3D drum behind ════════ -->
+  <div class="col">
+    <div class="label">First view · Trang chủ</div>
+    <div class="device">
+      <div class="scrollbody">
+        <div class="band homeband">
+          <div class="drum3d" data-tilt="0.42" data-speed="0.16" data-distance="4.6"><svg class="fallback" viewBox="0 0 100 100"><use href="#m-drum"/></svg><canvas></canvas></div>
+          <div class="statusbar" style="margin:-16px -20px 4px">21:57<span>●●●</span></div>
+          <div class="appbar" style="position:relative">
+            <div class="ttl" style="padding:0;font:500 15px var(--font-body);color:var(--on-band-muted)">Gia đình họ Nguyễn <svg class="ico ico--sm"><use href="#i-chevron-down"/></svg></div>
+            <div class="badge-wrap"><div class="iconbtn on-band"><svg class="ico"><use href="#i-bell"/></svg></div><span class="badge" style="box-shadow:0 0 0 2px var(--band-from)">2</span></div>
+          </div>
+          <div class="greet m-rise" style="--i:0;position:relative">Chào buổi tối,<b>Hiếu</b></div>
+          <svg class="fret"><rect width="100%" height="10" fill="url(#p-fret)"/></svg>
+        </div>
+
+        <div class="sheetwrap">
+          <div class="tolich m-rise" style="--i:1" id="sheet" role="button" aria-label="Tờ lịch hôm nay. Chạm để xem ngày mai">
+            <div class="th"><span>Tháng 11 · 2026</span><span>Năm Bính Ngọ</span></div>
+            <div class="perf"></div>
+            <div class="day" id="sheetDay">26</div>
+            <div class="wd" id="sheetWd">Thứ năm</div>
+            <div class="lunar">
+              <div><div class="k">Âm lịch</div><div class="v" id="sheetLunar">18</div><div class="s">tháng Mười</div></div>
+              <div class="rule"></div>
+              <div><div class="k">Sắp tới</div><div class="v" id="sheetNext">3</div><div class="s" id="sheetNextS">ngày đến giỗ bà</div></div>
+            </div>
+            <div class="proverb">“Uống nước nhớ nguồn”</div>
+          </div>
+        </div>
+
+        <div class="inset">
+          <div class="lacquercard m-rise" style="--i:2;margin-top:var(--gap-section);display:flex;gap:14px;align-items:center">
+            <span class="flame"><svg class="ico"><use href="#i-flame"/></svg></span>
+            <div style="flex:1"><div class="k">Ngày giỗ sắp tới</div><div class="t">Giỗ bà nội</div><div class="k" style="margin-top:2px"><span class="gold">21/10 âm</span> · CN 29/11 · 10:00</div></div>
+            <span class="countdown"><b>3</b>ngày</span>
+          </div>
+
+          <div class="secthead m-rise" style="--i:3"><div class="t-h5">Sắp tới trong nhà</div><span class="link" style="font-size:15px">Mở lịch</span></div>
+          <div class="list m-rise" style="--i:4;box-shadow:var(--elev-1)">
+            <div class="li"><span class="evicon ev-family"><svg class="ico"><use href="#i-users"/></svg></span><div class="tx"><div class="pri">Họp mặt cuối năm</div><div class="sec">Thứ bảy 28/11 · 18:00 · nhà bác Cả</div></div><span class="trail">2 ngày</span></div>
+            <div class="li"><span class="evicon ev-birthday"><svg class="ico"><use href="#i-cake"/></svg></span><div class="tx"><div class="pri">Sinh nhật mẹ</div><div class="sec">Thứ năm 03/12 · 25/10 âm</div></div><span class="trail">7 ngày</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="fab fab-ext" style="background:var(--primary)"><svg class="ico"><use href="#i-plus"/></svg>Thêm sự kiện</div>
+      <div class="bottomnav">
+        <div class="ni is-selected"><span class="pill"><svg class="ico"><use href="#i-home"/></svg></span>Trang chủ</div>
+        <div class="ni"><span class="pill"><svg class="ico"><use href="#i-calendar"/></svg></span>Lịch</div>
+        <div class="ni"><span class="pill"><svg class="ico"><use href="#i-users"/></svg></span>Gia đình</div>
+        <div class="ni"><span class="pill"><svg class="ico"><use href="#i-user"/></svg></span>Cá nhân</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ SCREEN 2 · Lịch tháng — month on paper over a drum-face watermark, day sheet below ════════ -->
+  <div class="col">
+    <div class="label">Lịch · Tháng 11</div>
+    <div class="device">
+      <div class="scrollbody">
+        <div class="band monthband">
+          <div class="drum3d" data-tilt="0.5" data-speed="0.1" data-distance="4.4"><svg class="fallback" viewBox="0 0 100 100"><use href="#m-drum"/></svg><canvas></canvas></div>
+          <div class="statusbar" style="margin:-16px -20px 4px">21:58<span>●●●</span></div>
+          <div class="appbar" style="position:relative"><div class="ttl" style="padding:0;font:500 15px var(--font-body);color:var(--on-band-muted)">Lịch gia đình</div>
+            <div class="iconbtn on-band soundtoggle" aria-label="Âm thanh"><svg class="ico"><use href="#i-volume-x"/></svg></div></div>
+          <div class="monthtitle m-rise" style="--i:0;position:relative"><span class="t-h2">Tháng 11</span><span>2026 · Bính Ngọ</span></div>
+          <div class="greet m-rise" style="--i:1;position:relative;margin-top:2px">Tháng Chín – tháng Mười âm lịch</div>
+          <svg class="fret"><rect width="100%" height="10" fill="url(#p-fret)"/></svg>
+        </div>
+
+        <div class="calcard m-rise" style="--i:2">
+          <svg class="watermark" viewBox="0 0 100 100" aria-hidden="true"><use href="#m-drum"/></svg>
+          <div class="navrow">
+            <div class="iconbtn"><svg class="ico"><use href="#i-chevron-left"/></svg></div>
+            <div class="togglegroup"><div class="tg is-selected">Dương lịch</div><div class="tg">Âm lịch</div></div>
+            <div class="iconbtn"><svg class="ico"><use href="#i-chevron-right"/></svg></div>
+          </div>
+          <div class="monthgrid" id="mg" style="position:relative"></div>
+        </div>
+
+        <div class="daysheet">
+          <div class="secthead" style="margin-top:0"><div><div class="t-h5" id="selTitle">Chủ nhật, 29/11</div><div class="t-caption" id="selLunar">21 tháng Mười âm lịch · còn 3 ngày</div></div></div>
+          <div class="lacquercard" id="selEvent" style="display:flex;gap:14px;align-items:center">
+            <span class="flame"><svg class="ico"><use href="#i-flame"/></svg></span>
+            <div style="flex:1"><div class="t" style="font-size:20px">Giỗ bà nội</div><div class="k">10:00 · Nhà thờ họ, Nam Định</div></div>
+            <svg class="ico ico--sm" style="color:var(--accent-bright)"><use href="#i-chevron-right"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="fab" style="background:var(--primary)"><svg class="ico"><use href="#i-plus"/></svg></div>
+      <div class="bottomnav">
+        <div class="ni"><span class="pill"><svg class="ico"><use href="#i-home"/></svg></span>Trang chủ</div>
+        <div class="ni is-selected"><span class="pill"><svg class="ico"><use href="#i-calendar"/></svg></span>Lịch</div>
+        <div class="ni"><span class="pill"><svg class="ico"><use href="#i-users"/></svg></span>Gia đình</div>
+        <div class="ni"><span class="pill"><svg class="ico"><use href="#i-user"/></svg></span>Cá nhân</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend"><b>Trang chủ</b>: lacquer band + live 3D trống đồng, a tear-off sheet (tap to tear to the next day), one lacquer card for the next giỗ, a quiet list, red FAB. <b>Lịch</b>: month on paper over a drum-face watermark, lunar day under each date, gold ring on mùng 1 / rằm, today in đỏ son with a gold pulse, the selected day's event in a lacquer card. Sounds (synthesized, off by default): trống when sound is turned on, mõ on a tap, chuông on a countdown.</div>
+
+<script>
+/* Month grid: November 2026, lunar days from the verified table (9/11 = mùng 1 tháng Mười). */
+(function(){
+  const wd=['T2','T3','T4','T5','T6','T7','CN'];
+  let h=wd.map((w,i)=>`<div class="wd${i==6?' sun':''}">${w}</div>`).join('');
+  const lunar=d=>d<=8?[d+22,9]:[d-8,10];
+  const ev={20:['holiday'],23:['important'],28:['family'],29:['death']};
+  [26,27,28,29,30,31].forEach(d=>h+=`<div class="daycell out"><span class="sd">${d}</span><span class="ld">${d-9}</span></div>`);
+  for(let d=1;d<=30;d++){const[l,m]=lunar(d);const sun=d%7===1;const mark=l===1||l===15;
+    const cls=['daycell',sun?'sun':'',mark?'lunar-mark':'',d===26?'is-today':'',d===29?'is-selected':''].join(' ');
+    h+=`<div class="${cls}" data-d="${d}"><span class="sd">${d}</span><span class="ld">${l===1?l+'/'+m:l}</span><span class="marks">${(ev[d]||[]).map(t=>`<i style="background:var(--ev-${t})"></i>`).join('')}</span></div>`;}
+  mg.innerHTML=h;
+})();
+
+/* Sounds: off until the user turns them on (no autoplay). */
+const SND={trong:new Audio('sounds/trong.wav'),mo:new Audio('sounds/mo.wav'),chuong:new Audio('sounds/chuong.wav')};
+let soundOn=false;
+const drums=[];
+function play(n){if(!soundOn)return;const a=SND[n].cloneNode();a.volume=n==='trong'?.8:.6;a.play().catch(()=>{});}
+function setSound(on){soundOn=on;document.querySelectorAll('#soundBtn,.soundtoggle').forEach(b=>{b.classList.toggle('is-on',on);const u=b.querySelector('use');if(u)u.setAttribute('href',on?'#i-volume':'#i-volume-x');});
+  soundBtn.querySelector('span').textContent=on?'Âm thanh: bật':'Âm thanh: tắt';if(on){play('trong');drums.forEach(d=>d.strike());}}
+soundBtn.onclick=()=>setSound(!soundOn);
+document.querySelectorAll('.soundtoggle').forEach(b=>b.onclick=()=>setSound(!soundOn));
+
+/* Tear-off sheet */
+const days=[[26,'Thứ năm',18,3,'ngày đến giỗ bà'],[27,'Thứ sáu',19,2,'ngày đến giỗ bà'],[28,'Thứ bảy',20,1,'ngày đến giỗ bà'],[29,'Chủ nhật',21,0,'hôm nay giỗ bà']];
+let di=0;
+sheet.onclick=()=>{if(sheet.classList.contains('is-tearing'))return;play('mo');sheet.classList.remove('m-rise','is-new');void sheet.offsetWidth;sheet.classList.add('is-tearing');
+  setTimeout(()=>{di=(di+1)%days.length;const[d,w,l,n,s]=days[di];sheetDay.textContent=d;sheetWd.textContent=w;sheetLunar.textContent=l;sheetNext.textContent=n;sheetNextS.textContent=s;
+    sheet.classList.remove('is-tearing');void sheet.offsetWidth;sheet.classList.add('is-new');},650);};
+
+/* Day selection on the month */
+const names=['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'];
+mg.addEventListener('click',e=>{const c=e.target.closest('.daycell[data-d]');if(!c)return;play('mo');
+  mg.querySelectorAll('.is-selected').forEach(x=>x.classList.remove('is-selected'));c.classList.add('is-selected');
+  const d=+c.dataset.d;const l=d<=8?[d+22,'Chín']:[d-8,'Mười'];
+  selTitle.textContent=`${names[d%7]}, ${String(d).padStart(2,'0')}/11`;selLunar.textContent=`${l[0]} tháng ${l[1]} âm lịch`+(d>=26?` · ${d===26?'hôm nay':'còn '+(d-26)+' ngày'}`:'');
+  selEvent.style.display=d===29?'flex':'none';});
+document.querySelectorAll('.countdown').forEach(c=>c.addEventListener('click',()=>play('chuong')));
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.fab');if(!b)return;const r=b.getBoundingClientRect();const s=document.createElement('span');s.className='ripple';const z=Math.max(r.width,r.height);s.style.cssText=`width:${z}px;height:${z}px;left:${e.clientX-r.left-z/2}px;top:${e.clientY-r.top-z/2}px`;b.appendChild(s);setTimeout(()=>s.remove(),620);});
+
+/* Live 3D drums (fall back to the SVG drum if WebGL or ES modules are unavailable, e.g. file://). */
+import('./drum3d.js').then(({mountDrum})=>{
+  document.querySelectorAll('.drum3d').forEach(slot=>{
+    try{drums.push(mountDrum(slot.querySelector('canvas'),{tilt:+slot.dataset.tilt,speed:+slot.dataset.speed,distance:+slot.dataset.distance||3.4}));slot.classList.add('is-live');}catch(err){console.warn('3D drum unavailable',err);}
+  });
+}).catch(err=>console.warn('3D drum unavailable',err));
+</script>
+</body>
+</html>

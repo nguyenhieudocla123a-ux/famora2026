@@ -23,3 +23,9 @@ mobile/ios/Pods/
 mobile/ios/build/
 *.keystore
 !debug.keystore
+
+# JS bundle packaged for previews without Metro
+mobile/android/app/src/main/assets/index.android.bundle
+
+# Design-system build output (regenerate with tools/build-figma.mjs)
+design-system/figma/*.html

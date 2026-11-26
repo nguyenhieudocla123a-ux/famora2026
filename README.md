@@ -2,7 +2,7 @@
 
 Ứng dụng quản lý lịch và kết nối gia đình: sinh nhật, ngày giỗ theo âm lịch, kỷ niệm, sự kiện gia đình, kèm nhắc nhở.
 
-- **Backend:** Java 17, Spring Boot 3, SQL Server, Redis, Flyway, JWT, WebSocket STOMP
+- **Backend:** Java 17, Spring Boot 3, PostgreSQL, Redis, Flyway, JWT, WebSocket STOMP
 - **Mobile:** React Native CLI, TypeScript, Redux Toolkit
 
 ## Trạng thái
