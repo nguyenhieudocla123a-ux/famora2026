@@ -30,6 +30,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
+                // the WebSocket handshake carries no header we can rely on: the JWT is checked on the STOMP CONNECT frame
+                .requestMatchers("/ws").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o
                 .jwt(Customizer.withDefaults())

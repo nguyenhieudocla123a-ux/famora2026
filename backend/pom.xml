@@ -64,6 +64,12 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- realtime notifications: STOMP over WebSocket -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
+
     <!-- tests: MockMvc, security helpers, a real PostgreSQL in Docker -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

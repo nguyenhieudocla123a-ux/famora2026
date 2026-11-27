@@ -14,7 +14,7 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 
 `mvn test`: chạy trên một PostgreSQL tạm trong Docker (Testcontainers), không đụng database của bạn.
 
-## API hiện có (Phase 3–6a)
+## API hiện có (Phase 3–6)
 
 | Method | URL | Cần token | Ghi chú |
 |---|---|---|---|
@@ -75,3 +75,10 @@ các năm sau dùng tháng thường; tháng 11–12 âm có thể rơi sang nă
 các lần nhắc 30 ngày tới vào `reminder_schedules` (khoá UNIQUE nên chạy lại không trùng); **dispatcher** (mỗi
 phút) lấy nhắc đến giờ bằng `FOR UPDATE SKIP LOCKED`, tạo thông báo và đánh dấu SENT trong một transaction.
 Mặc định nhắc trước 7 và 1 ngày lúc 8:00 giờ Việt Nam; người đã rời gia đình không nhận.
+
+## Thông báo realtime (WebSocket STOMP)
+
+Kết nối `ws://<host>:8080/ws` (WebSocket thuần, không SockJS). Frame `CONNECT` phải có header
+`Authorization: Bearer <accessToken>`; sau đó `SUBSCRIBE /user/queue/notifications`. Mỗi thông báo mới được đẩy
+tới đúng người, **sau khi** đã lưu vào database. Đăng ký kênh khác hoặc gửi `SEND` đều bị từ chối (ngắt kết nối).
+Không kết nối lúc đó thì không mất gì: app đọc lại `/api/notifications` khi mở.
