@@ -41,6 +41,12 @@ public class FamilyAccessService {
         return require(familyId, userId, FamilyRole.MEMBER);
     }
 
+    /** Whether {@code memberId} is an active member of this very family (for linking a profile to an account). */
+    @Transactional(readOnly = true)
+    public boolean isActiveMemberOf(long familyId, long memberId) {
+        return members.findActiveInFamily(memberId, familyId).isPresent();
+    }
+
     /** OWNER and ADMIN always; a MEMBER only when the family allows members to add events. */
     @Transactional(readOnly = true)
     public FamilyMember requireCanCreateEvents(long familyId, long userId) {

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,4 +26,9 @@ interface FamilyEventRepository extends JpaRepository<FamilyEvent, Long> {
             """)
     List<FamilyEvent> candidates(@Param("familyId") Long familyId, @Param("from") LocalDate from,
             @Param("to") LocalDate to);
+
+    /** A relative's profile was deleted: the events stay, only the link to them goes. */
+    @Modifying
+    @Query(value = "delete from event_persons where person_id = :personId", nativeQuery = true)
+    int unlinkPerson(@Param("personId") Long personId);
 }

@@ -29,6 +29,11 @@ public enum ErrorCode {
     EVENT_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "Sự kiện cần có ngày: ngày dương, hoặc ngày và tháng âm"),
     RANGE_TOO_LONG(HttpStatus.BAD_REQUEST, "Khoảng ngày tối đa 400 ngày"),
     VERSION_CONFLICT(HttpStatus.CONFLICT, "Sự kiện vừa được người khác sửa, hãy tải lại rồi thử lại"),
+    PERSON_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy người thân này trong gia đình"),
+    DEATH_DETAILS_FOR_LIVING(HttpStatus.BAD_REQUEST, "Chỉ nhập ngày mất cho người đã khuất"),
+    DEATH_DATES_DISAGREE(HttpStatus.BAD_REQUEST, "Ngày mất dương lịch và âm lịch không khớp nhau"),
+    ANNIVERSARY_NEEDS_DATE(HttpStatus.BAD_REQUEST, "Cần ngày mất (âm hoặc dương) để tạo ngày giỗ"),
+    MEMBER_ALREADY_LINKED(HttpStatus.CONFLICT, "Thành viên này đã có hồ sơ người thân"),
     EMAIL_TAKEN(HttpStatus.CONFLICT, "Email này đã được đăng ký"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra, vui lòng thử lại sau");
 

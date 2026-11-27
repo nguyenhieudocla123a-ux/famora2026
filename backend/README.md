@@ -14,7 +14,7 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 
 `mvn test`: chạy trên một PostgreSQL tạm trong Docker (Testcontainers), không đụng database của bạn.
 
-## API hiện có (Phase 3–5b)
+## API hiện có (Phase 3–5)
 
 | Method | URL | Cần token | Ghi chú |
 |---|---|---|---|
@@ -43,6 +43,8 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 | GET | `/api/families/{id}/events?from&to&type` | Thành viên | Trả **các lần xảy ra** trong khoảng (tối đa 400 ngày), kèm ngày âm và số năm |
 | GET | `/api/families/{id}/events/upcoming?days=30` | Thành viên | Từ hôm nay (giờ Việt Nam) |
 | GET / PUT / DELETE | `/api/families/{id}/events/{eventId}` | Thành viên / người tạo hoặc ADMIN | PUT cần `version`; version cũ → 409 `VERSION_CONFLICT` |
+| GET / POST | `/api/families/{id}/persons` | Thành viên / ADMIN | Hồ sơ người thân; `createAnniversary: true` tự tạo giỗ âm lịch hằng năm |
+| GET / PUT / DELETE | `/api/families/{id}/persons/{personId}` | Thành viên / ADMIN / ADMIN | Ngày mất dương tự đổi ra ngày âm; kèm `nextAnniversary` |
 | GET | `/actuator/health` | Không | Kiểm tra app còn sống |
 
 Người không phải thành viên luôn nhận **404** (không lộ gia đình có tồn tại); thành viên thiếu quyền nhận **403**.

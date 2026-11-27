@@ -2,6 +2,8 @@ package com.famora.calendar.event;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Set;
 
 import com.famora.calendar.event.EventEnums.CalendarType;
 import com.famora.calendar.event.EventEnums.EventType;
@@ -36,19 +38,21 @@ public final class EventDtos {
             Boolean lunarLeapMonth,
             LocalTime startTime,
             Recurrence recurrence,
-            Integer version) {
+            Integer version,
+            /** Relatives of this family the event is about; null keeps the current links on update. */
+            List<Long> personIds) {
     }
 
     public record EventResponse(Long id, Long familyId, Long createdBy, EventType type, String title,
             String description, String location, CalendarType calendarType, LocalDate solarDate, Integer lunarDay,
             Integer lunarMonth, Integer lunarYear, boolean lunarLeapMonth, LocalTime startTime, Recurrence recurrence,
-            int version) {
+            int version, Set<Long> personIds) {
 
         static EventResponse from(FamilyEvent e) {
             return new EventResponse(e.getId(), e.getFamilyId(), e.getCreatedBy(), e.getType(), e.getTitle(),
                     e.getDescription(), e.getLocation(), e.getCalendarType(), e.getSolarDate(), e.getLunarDay(),
                     e.getLunarMonth(), e.getLunarYear(), e.isLunarLeapMonth(), e.getStartTime(), e.getRecurrence(),
-                    e.getVersion());
+                    e.getVersion(), e.getPersonIds());
         }
     }
 

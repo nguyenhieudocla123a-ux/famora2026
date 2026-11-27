@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +39,13 @@ public class EventService {
 
     private final FamilyEventRepository events;
     private final FamilyAccessService access;
+    private final PersonLookup persons;
     private final Clock clock;
 
-    public EventService(FamilyEventRepository events, FamilyAccessService access, Clock clock) {
+    public EventService(FamilyEventRepository events, FamilyAccessService access, PersonLookup persons, Clock clock) {
         this.events = events;
         this.access = access;
+        this.persons = persons;
         this.clock = clock;
     }
 
@@ -50,6 +54,7 @@ public class EventService {
         access.requireCanCreateEvents(familyId, userId);
         FamilyEvent event = new FamilyEvent(familyId, userId);
         apply(event, req);
+        linkPersons(event, familyId, req.personIds());
         return EventResponse.from(events.saveAndFlush(event));
     }
 
@@ -69,6 +74,9 @@ public class EventService {
             throw new BusinessException(ErrorCode.VERSION_CONFLICT);
         }
         apply(event, req);
+        if (req.personIds() != null) {
+            linkPersons(event, familyId, req.personIds());
+        }
         events.flush(); // bumps the version now, inside the transaction
         return EventResponse.from(event);
     }
@@ -114,6 +122,21 @@ public class EventService {
         int span = Math.max(0, Math.min(days, MAX_UPCOMING_DAYS));
         LocalDate today = LocalDate.now(clock.withZone(ClockConfig.VIETNAM));
         return occurrences(familyId, userId, today, today.plusDays(span), null);
+    }
+
+    /** Removes a deleted relative from every event; called by the person module. */
+    @Transactional
+    public void unlinkPerson(long personId) {
+        events.unlinkPerson(personId);
+    }
+
+    /** Only live profiles of this same family can be linked (IDOR guard): otherwise 404. */
+    private void linkPersons(FamilyEvent event, long familyId, List<Long> ids) {
+        Set<Long> wanted = ids == null ? Set.of() : new HashSet<>(ids);
+        if (!wanted.isEmpty() && !persons.existingIn(familyId, wanted).containsAll(wanted)) {
+            throw new BusinessException(ErrorCode.PERSON_NOT_FOUND);
+        }
+        event.linkPersons(wanted);
     }
 
     /** Checks the date combination and fills the derived solar date of lunar events with a known year. */

@@ -3,19 +3,24 @@ package com.famora.calendar.event;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.famora.calendar.event.EventEnums.CalendarType;
 import com.famora.calendar.event.EventEnums.EventType;
 import com.famora.calendar.event.EventEnums.Recurrence;
 import com.famora.calendar.occurrence.OccurrenceCalculator;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -77,6 +82,12 @@ public class FamilyEvent {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    /** The relatives this event is about (a giỗ for "Bà nội", a birthday for "Bé An"). */
+    @ElementCollection
+    @CollectionTable(name = "event_persons", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "person_id")
+    private Set<Long> personIds = new HashSet<>();
+
     /** Optimistic lock: an edit based on an older version is refused instead of silently overwriting. */
     @Version
     private int version;
@@ -122,6 +133,15 @@ public class FamilyEvent {
         this.lunarLeapMonth = lunarLeapMonth;
         this.startTime = startTime;
         this.recurrence = recurrence;
+    }
+
+    void linkPersons(Set<Long> ids) {
+        personIds.clear();
+        personIds.addAll(ids);
+    }
+
+    public Set<Long> getPersonIds() {
+        return Set.copyOf(personIds);
     }
 
     void delete(Instant now) {
