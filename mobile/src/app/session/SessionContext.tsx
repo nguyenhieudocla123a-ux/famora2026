@@ -1,24 +1,27 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { mockFamilies, mockNotifications, mockUser } from '../../mocks/data';
+import { mockNotifications } from '../../mocks/data';
 import { AppNotification, FamilySummary, UserProfile } from '../../shared/types/domain';
 import { setSoundEnabled } from '../../shared/sound/soundEngine';
+import { useAppDispatch, useAppSelector } from '../store';
+import { logout } from '../../features/auth/authSlice';
+import { useGetFamiliesQuery } from '../../features/family/api/familyApi';
 
 /**
- * PHASE 2 — UI-only session. Phase 7 replaces it with the Redux auth slice
- * (tokens in react-native-keychain, refresh via Axios interceptor).
+ * What every screen needs about the session. Since Phase 7a the user comes from the auth slice and the
+ * families from the API; notifications are still sample data until Phase 7d.
  */
 interface SessionValue {
   user: UserProfile | null;
   families: FamilySummary[];
+  familiesLoading: boolean;
   activeFamily: FamilySummary | null;
   notifications: AppNotification[];
   unreadCount: number;
-  signIn: () => void;
   signOut: () => void;
   setActiveFamily: (id: string) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
-  /** UI sounds (trống, mõ, chuông, tiếng xé giấy). Phase 7: persisted in user settings. */
+  /** UI sounds (mõ, chuông, tiếng xé giấy). */
   soundOn: boolean;
   toggleSound: () => void;
 }
@@ -26,29 +29,38 @@ interface SessionValue {
 const SessionContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [activeFamilyId, setActiveFamilyId] = useState<string>(mockFamilies[0].id);
+  const dispatch = useAppDispatch();
+  const { user, status } = useAppSelector(s => s.auth);
+  const { data: families = [], isLoading: familiesLoading } = useGetFamiliesQuery(undefined, {
+    skip: status !== 'signedIn',
+  });
+  const [activeFamilyId, setActiveFamilyId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState(mockNotifications);
   const [soundOn, setSoundOn] = useState(true);
   const toggleSound = useCallback(() => setSoundOn(on => !on), []);
   useEffect(() => setSoundEnabled(soundOn), [soundOn]);
 
-  const signIn = useCallback(() => setUser(mockUser), []);
-  const signOut = useCallback(() => setUser(null), []);
+  const signOut = useCallback(() => {
+    setActiveFamilyId(null);
+    dispatch(logout());
+  }, [dispatch]);
   const markRead = useCallback(
     (id: string) => setNotifications(list => list.map(n => (n.id === id ? { ...n, read: true } : n))),
     [],
   );
   const markAllRead = useCallback(() => setNotifications(list => list.map(n => ({ ...n, read: true }))), []);
 
+  // the chosen family, or the first one; a family that disappeared (left, dissolved) falls back to the first
+  const activeFamily = families.find(f => f.id === activeFamilyId) ?? families[0] ?? null;
+
   const value = useMemo<SessionValue>(
     () => ({
       user,
-      families: mockFamilies,
-      activeFamily: mockFamilies.find(f => f.id === activeFamilyId) ?? null,
+      families,
+      familiesLoading,
+      activeFamily,
       notifications,
       unreadCount: notifications.filter(n => !n.read).length,
-      signIn,
       signOut,
       setActiveFamily: setActiveFamilyId,
       markRead,
@@ -56,7 +68,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       soundOn,
       toggleSound,
     }),
-    [user, activeFamilyId, notifications, signIn, signOut, markRead, markAllRead, soundOn, toggleSound],
+    [user, families, familiesLoading, activeFamily, notifications, signOut, markRead, markAllRead, soundOn, toggleSound],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

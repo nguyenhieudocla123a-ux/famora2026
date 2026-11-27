@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronLeft, UserPlus } from 'lucide-react-native';
 import { AppText, Button, IconButton, Screen, TextField } from '../../../shared/ui';
 import { colors, spacing } from '../../../shared/theme';
-import { notConnected } from '../../../shared/utils/notConnected';
+import { useAppDispatch } from '../../../app/store';
+import { register } from '../authSlice';
+import { FormError } from '../components/FormError';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { RegisterForm, registerSchema } from '../schemas';
 
@@ -19,13 +21,36 @@ const fields: { name: Field; label: string; hint?: string; secure?: boolean; ema
 ];
 
 export function RegisterScreen({ navigation }: RootScreenProps<'Register'>) {
-  const { control, handleSubmit, formState } = useForm<RegisterForm>({
+  const dispatch = useAppDispatch();
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const { control, handleSubmit, formState, setError } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
   });
 
-  // Phase 7: POST /api/auth/register, then sign in.
-  const onSubmit = handleSubmit(() => notConnected('Tạo tài khoản'));
+  // POST /api/auth/register, then sign in: the navigator moves to the app on its own
+  const onSubmit = handleSubmit(async values => {
+    setServerError(null);
+    setSubmitting(true);
+    const result = await dispatch(
+      register({ fullName: values.fullName.trim(), email: values.email.trim(), password: values.password }),
+    );
+    setSubmitting(false);
+    if (register.rejected.match(result) && result.payload) {
+      const err = result.payload;
+      if (err.code === 'EMAIL_TAKEN') {
+        setError('email', { message: err.message });
+        return;
+      }
+      for (const [field, message] of Object.entries(err.fieldErrors)) {
+        if (field === 'email' || field === 'password' || field === 'fullName') {
+          setError(field, { message });
+        }
+      }
+      setServerError(err.message);
+    }
+  });
 
   return (
     <Screen edges={['top', 'bottom']} contentStyle={styles.content}>
@@ -61,7 +86,8 @@ export function RegisterScreen({ navigation }: RootScreenProps<'Register'>) {
         />
       ))}
 
-      <Button label="Tạo tài khoản" icon={UserPlus} onPress={onSubmit} fullWidth />
+      <FormError message={serverError} />
+      <Button label="Tạo tài khoản" icon={UserPlus} onPress={onSubmit} loading={submitting} fullWidth />
     </Screen>
   );
 }

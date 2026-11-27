@@ -3,6 +3,22 @@
 jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);
 jest.mock('react-native-audio-api', () => require('react-native-audio-api/mock'));
 require('react-native-gesture-handler/jestSetup');
+// The secure store keeps the refresh token in memory under Jest.
+jest.mock('react-native-keychain', () => {
+  let stored = null;
+  return {
+    ACCESSIBLE: { AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 'AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY' },
+    getGenericPassword: jest.fn(async () => (stored ? { username: 'famora', password: stored } : false)),
+    setGenericPassword: jest.fn(async (_u, p) => {
+      stored = p;
+      return true;
+    }),
+    resetGenericPassword: jest.fn(async () => {
+      stored = null;
+      return true;
+    }),
+  };
+});
 // Reanimated 4's own mock needs native worklets; a small stub covers what the app uses.
 // Reduced motion is reported, so ambient animations are not even mounted in tests.
 jest.mock('react-native-reanimated', () => {

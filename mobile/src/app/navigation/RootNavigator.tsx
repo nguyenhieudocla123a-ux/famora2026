@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors, fonts } from '../../shared/theme';
-import { useSession } from '../session/SessionContext';
+import { useAppSelector } from '../store';
 import { SplashScreen } from '../../features/auth/screens/SplashScreen';
 import { LoginScreen } from '../../features/auth/screens/LoginScreen';
 import { RegisterScreen } from '../../features/auth/screens/RegisterScreen';
@@ -18,17 +18,21 @@ import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-/** How long the splash shows while (in Phase 7) the stored refresh token is checked. */
+/** The splash stays at least this long, so a fast start does not flash. */
 const SPLASH_MS = 1200;
 
 export function RootNavigator() {
-  const { user } = useSession();
-  const [booting, setBooting] = useState(true);
+  const status = useAppSelector(s => s.auth.status);
+  const [minSplash, setMinSplash] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setBooting(false), SPLASH_MS);
+    const t = setTimeout(() => setMinSplash(false), SPLASH_MS);
     return () => clearTimeout(t);
   }, []);
+
+  // while booting, the stored refresh token is being exchanged for a session
+  const booting = minSplash || status === 'booting';
+  const signedIn = status === 'signedIn';
 
   return (
     <Stack.Navigator
@@ -43,7 +47,7 @@ export function RootNavigator() {
     >
       {booting ? (
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
-      ) : !user ? (
+      ) : !signedIn ? (
         <Stack.Group screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />

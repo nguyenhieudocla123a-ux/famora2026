@@ -9,27 +9,38 @@ import { BrandLogo } from '../../../shared/ui/family/Brand';
 import { SkyBackground } from '../../../shared/ui/soft/SkyBackground';
 import { Appear } from '../../../shared/ui/soft/Appear';
 import { colors, spacing } from '../../../shared/theme';
-import { useSession } from '../../../app/session/SessionContext';
+import { useAppDispatch } from '../../../app/store';
+import { login } from '../authSlice';
+import { FormError } from '../components/FormError';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { LoginForm, loginSchema } from '../schemas';
 
 export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
-  const { signIn } = useSession();
+  const dispatch = useAppDispatch();
+  const [serverError, setServerError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const passwordRef = useRef<TextInputInstance>(null);
   const [submitting, setSubmitting] = useState(false);
-  const { control, handleSubmit, formState } = useForm<LoginForm>({
+  const { control, handleSubmit, formState, setError } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  // PHASE 2: a valid form opens the app with sample data. Phase 7 calls POST /api/auth/login.
-  const onSubmit = handleSubmit(() => {
+  // POST /api/auth/login; on success the navigator switches to the app by itself (auth status)
+  const onSubmit = handleSubmit(async values => {
+    setServerError(null);
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      signIn();
-    }, 500);
+    const result = await dispatch(login({ email: values.email.trim(), password: values.password }));
+    setSubmitting(false);
+    if (login.rejected.match(result) && result.payload) {
+      const err = result.payload;
+      for (const [field, message] of Object.entries(err.fieldErrors)) {
+        if (field === 'email' || field === 'password') {
+          setError(field, { message });
+        }
+      }
+      setServerError(err.message);
+    }
   });
 
   return (
@@ -85,6 +96,7 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
         )}
       />
 
+      <FormError message={serverError} />
       <Button label="Đăng nhập" icon={LogIn} onPress={onSubmit} loading={submitting} fullWidth />
       </Card>
       </Appear>

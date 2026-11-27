@@ -24,6 +24,7 @@ const textPairs: [string, string, string][] = [
   ['goldText on goldSoft', colors.goldText, colors.goldSoft],
   ['goldText on background', colors.goldText, colors.background],
   ['danger on surface', colors.danger, colors.surface],
+  ['dangerText on dangerSoft (form errors)', colors.dangerText, colors.dangerSoft],
   ['success on background', colors.success, colors.background],
   ['ink on surface (sheet numerals)', colors.ink, colors.surface],
   ['inkRed on surface (Sunday numerals)', colors.inkRed, colors.surface],

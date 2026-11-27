@@ -49,6 +49,8 @@ export const colors = {
   successSoft: '#E2F5E0',
   danger: '#C2483E',
   dangerSoft: '#FDE6E3',
+  /** Error text on dangerSoft: 5.5:1 (danger itself is only 4.1:1 there). */
+  dangerText: '#A8352C',
 
   sunday: '#D23A2F',
   /** Sky gradient behind every main screen, top to bottom. */
