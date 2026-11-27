@@ -1,0 +1,25 @@
+# Local development database for Famora.
+# Values come from .env next to this file (copy .env.example to .env first).
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: famora-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: famora
+      POSTGRES_USER: famora
+      POSTGRES_PASSWORD: KSkzidTk4iYToimIrIZUL4qX
+      TZ: UTC
+    ports:
+      # host port 5434: 5432 is taken by a PostgreSQL 18 Windows service, 5433 by another project
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432" # only this machine can reach it
+    volumes:
+      - famora-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  famora-pg:

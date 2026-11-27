@@ -1,0 +1,7 @@
+# Tests run against a throwaway PostgreSQL container (see IntegrationTest); no .env needed.
+famora:
+  jwt:
+    # test-only key (42 bytes, base64); never used outside tests
+    secret: dGVzdC1vbmx5LWtleS1mb3ItZmFtb3JhLWludGVncmF0aW9uLXRlc3Rz
+    issuer: famora
+    access-ttl: 15m
