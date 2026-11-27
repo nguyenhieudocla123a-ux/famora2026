@@ -29,3 +29,10 @@ mobile/android/app/src/main/assets/index.android.bundle
 
 # Design-system build output (regenerate with tools/build-figma.mjs)
 design-system/figma/*.html
+# Image assets copied by `react-native bundle` (regenerated on every bundle)
+mobile/android/app/src/main/res/drawable-mdpi/
+mobile/android/app/src/main/res/drawable-hdpi/
+mobile/android/app/src/main/res/drawable-xhdpi/
+mobile/android/app/src/main/res/drawable-xxhdpi/
+mobile/android/app/src/main/res/drawable-xxxhdpi/
+mobile/android/app/src/main/res/raw/

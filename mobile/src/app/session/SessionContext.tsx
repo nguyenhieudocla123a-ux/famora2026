@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { mockFamilies, mockNotifications, mockUser } from '../../mocks/data';
 import { AppNotification, FamilySummary, UserProfile } from '../../shared/types/domain';
+import { setSoundEnabled } from '../../shared/sound/soundEngine';
 
 /**
  * PHASE 2 — UI-only session. Phase 7 replaces it with the Redux auth slice
@@ -17,6 +18,9 @@ interface SessionValue {
   setActiveFamily: (id: string) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
+  /** UI sounds (trống, mõ, chuông, tiếng xé giấy). Phase 7: persisted in user settings. */
+  soundOn: boolean;
+  toggleSound: () => void;
 }
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -25,6 +29,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [activeFamilyId, setActiveFamilyId] = useState<string>(mockFamilies[0].id);
   const [notifications, setNotifications] = useState(mockNotifications);
+  const [soundOn, setSoundOn] = useState(true);
+  const toggleSound = useCallback(() => setSoundOn(on => !on), []);
+  useEffect(() => setSoundEnabled(soundOn), [soundOn]);
 
   const signIn = useCallback(() => setUser(mockUser), []);
   const signOut = useCallback(() => setUser(null), []);
@@ -46,8 +53,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setActiveFamily: setActiveFamilyId,
       markRead,
       markAllRead,
+      soundOn,
+      toggleSound,
     }),
-    [user, activeFamilyId, notifications, signIn, signOut, markRead, markAllRead],
+    [user, activeFamilyId, notifications, signIn, signOut, markRead, markAllRead, soundOn, toggleSound],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

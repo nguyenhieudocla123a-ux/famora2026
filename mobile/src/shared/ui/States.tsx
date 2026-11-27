@@ -1,9 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 import { CloudOff, type LucideIcon } from 'lucide-react-native';
 import { colors, spacing } from '../theme';
 import { AppText } from './AppText';
 import { Button } from './Button';
+import { art } from './soft/art';
+import { Appear } from './soft/Appear';
 
 export function LoadingState({ label = 'Đang tải…' }: { label?: string }) {
   return (
@@ -34,7 +36,8 @@ export function ErrorState({ message = 'Không tải được dữ liệu. Kiể
 }
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  /** Small icon; leave it out to show the illustrated calendar instead. */
+  icon?: LucideIcon;
   title: string;
   body: string;
   actionLabel?: string;
@@ -43,10 +46,14 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, title, body, actionLabel, onAction }: EmptyStateProps) {
   return (
-    <View style={styles.center}>
-      <View style={styles.iconTile}>
-        <Icon size={32} color={colors.primary} strokeWidth={1.75} />
-      </View>
+    <Appear style={styles.center}>
+      {Icon ? (
+        <View style={styles.iconTile}>
+          <Icon size={32} color={colors.primary} strokeWidth={1.75} />
+        </View>
+      ) : (
+        <Image source={art.emptyCalendar} style={styles.art} resizeMode="contain" accessibilityElementsHidden importantForAccessibility="no" />
+      )}
       <AppText variant="heading" align="center">
         {title}
       </AppText>
@@ -54,7 +61,7 @@ export function EmptyState({ icon: Icon, title, body, actionLabel, onAction }: E
         {body}
       </AppText>
       {actionLabel && onAction && <Button label={actionLabel} onPress={onAction} />}
-    </View>
+    </Appear>
   );
 }
 
@@ -67,6 +74,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xxl,
   },
+  art: { width: 176, height: 136, marginBottom: spacing.xs },
   iconTile: {
     width: 72,
     height: 72,

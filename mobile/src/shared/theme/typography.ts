@@ -5,20 +5,21 @@ import { TextStyle } from 'react-native';
  * On Android the family name is the file name, so weights are separate families;
  * never combine these with fontWeight.
  *
- * Body text starts at 17 so older family members can read it without zooming.
+ * Nunito (rounded, like the Famora wordmark) for headings and the tear-off day numeral;
+ * Be Vietnam Pro for reading. Body starts at 17 so older family members can read it easily.
  * The system font size setting is still respected (see AppText maxFontSizeMultiplier).
  */
 export const fonts = {
-  serif: 'NotoSerif_600SemiBold',
-  serifMedium: 'NotoSerif_500Medium',
+  display: 'Nunito_800ExtraBold',
+  heading: 'Nunito_700Bold',
   sans: 'BeVietnamPro_400Regular',
   sansMedium: 'BeVietnamPro_500Medium',
   sansSemiBold: 'BeVietnamPro_600SemiBold',
 } as const;
 
 export const typography = {
-  display: { fontFamily: fonts.serif, fontSize: 28, lineHeight: 38 },
-  title: { fontFamily: fonts.serif, fontSize: 22, lineHeight: 30 },
+  display: { fontFamily: fonts.display, fontSize: 30, lineHeight: 38 },
+  title: { fontFamily: fonts.heading, fontSize: 22, lineHeight: 30 },
   heading: { fontFamily: fonts.sansSemiBold, fontSize: 18, lineHeight: 26 },
   body: { fontFamily: fonts.sans, fontSize: 17, lineHeight: 26 },
   bodyStrong: { fontFamily: fonts.sansMedium, fontSize: 17, lineHeight: 26 },

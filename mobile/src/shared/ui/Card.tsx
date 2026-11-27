@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, View, ViewProps, ViewStyle } from 'react-native';
-import { colors, radius, spacing } from '../theme';
+import { StyleSheet, View, ViewProps, ViewStyle } from 'react-native';
+import { colors, radius, shadow, spacing } from '../theme';
+import { PressScale } from './soft/PressScale';
 
 interface CardProps extends ViewProps {
   onPress?: () => void;
@@ -15,7 +16,7 @@ const tones = {
   primary: { backgroundColor: colors.primary, borderColor: colors.primary },
 };
 
-/** The app's one card style. A card with onPress becomes a single button for screen readers. */
+/** The app's one card style: white, 24 dp corners, a soft blue lift; it sinks a little when pressed. A card with onPress becomes a single button for screen readers. */
 export function Card({ onPress, accessibilityLabel, tone = 'default', style, children, ...rest }: CardProps) {
   const base = [styles.card, tones[tone], style];
   if (!onPress) {
@@ -26,23 +27,17 @@ export function Card({ onPress, accessibilityLabel, tone = 'default', style, chi
     );
   }
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [base, pressed && tone === 'default' && styles.pressed]}
-      {...rest}
-    >
+    <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={base} {...rest}>
       {children}
-    </Pressable>
+    </PressScale>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     borderWidth: 1,
     padding: spacing.lg,
+    ...shadow.card,
   },
-  pressed: { backgroundColor: colors.surfaceSunken },
 });

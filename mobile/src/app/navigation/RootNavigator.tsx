@@ -36,7 +36,7 @@ export function RootNavigator() {
         headerStyle: { backgroundColor: colors.background },
         headerShadowVisible: false,
         headerTintColor: colors.primary,
-        headerTitleStyle: { fontFamily: fonts.serif, fontSize: 20, color: colors.text },
+        headerTitleStyle: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: colors.background },
       }}

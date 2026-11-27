@@ -1,33 +1,31 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { colors } from '../theme';
-import { AppText } from './AppText';
+import { avatarArt, avatarFor, type AvatarArt } from './soft/art';
 
-const tints = ['#EFE4D2', '#F6E1DE', '#FCEFD3', '#E1EDE3', '#DDEBEE'];
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  const last = parts[parts.length - 1] ?? '';
-  const first = parts.length > 1 ? parts[0] : '';
-  return ((first[0] ?? '') + (last[0] ?? '')).toUpperCase();
+interface Props {
+  name: string;
+  /** Family nickname ("Bố", "Bà nội"), used to pick the right face. */
+  nickname?: string;
+  /** Force a face, e.g. for the signed-in user. */
+  face?: AvatarArt;
+  size?: number;
+  /** White ring, for avatars that overlap in a stack. */
+  ring?: boolean;
 }
 
-/** Initials avatar; photo avatars arrive with the upload API in Phase 7. */
-export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
-  const tint = tints[name.length % tints.length];
+/** Illustrated family face; real photos replace it with the upload API in Phase 7. */
+export function Avatar({ name, nickname, face, size = 44, ring = false }: Props) {
+  const src = avatarArt[face ?? avatarFor(name, nickname)];
+  const box = { width: size, height: size, borderRadius: size / 2 };
   return (
-    <View
-      style={[styles.base, { width: size, height: size, borderRadius: size / 2, backgroundColor: tint }]}
-      importantForAccessibility="no-hide-descendants"
-      accessibilityElementsHidden
-    >
-      <AppText variant="label" color={colors.primary} style={{ fontSize: size * 0.36, lineHeight: size * 0.5 }}>
-        {initials(name)}
-      </AppText>
+    <View style={[styles.base, box, ring && styles.ring]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+      <Image source={src} style={box} resizeMode="cover" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  base: { alignItems: 'center', justifyContent: 'center' },
+  base: { overflow: 'hidden', backgroundColor: colors.primarySoft },
+  ring: { borderWidth: 2.5, borderColor: colors.surface },
 });

@@ -1,26 +1,29 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppText } from '../../../shared/ui';
-import { BrandMark } from '../../../shared/ui/BrandMark';
+import { BrandLogo } from '../../../shared/ui/family/Brand';
+import { SkyBackground } from '../../../shared/ui/soft/SkyBackground';
+import { Hills } from '../../../shared/ui/soft/Hills';
+import { Appear } from '../../../shared/ui/soft/Appear';
 import { colors, spacing } from '../../../shared/theme';
 
 export function SplashScreen() {
   return (
     <SafeAreaView style={styles.root}>
+      <SkyBackground height={560} />
+      <Hills height={170} />
       <View style={styles.center}>
-        <BrandMark size={88} />
-        <AppText variant="body" color={colors.textSecondary} align="center">
-          Lịch gia đình, nhớ trọn ngày giỗ, ngày vui
-        </AppText>
+        <Appear>
+          <BrandLogo width={270} />
+        </Appear>
       </View>
-      <ActivityIndicator color={colors.primary} style={styles.loader} accessibilityLabel="Đang mở ứng dụng" />
+      <ActivityIndicator color={colors.primary} style={styles.loader} accessibilityLabel="Đang mở Famora" />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, paddingHorizontal: spacing.xl },
-  loader: { marginBottom: spacing.xxl },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl, paddingBottom: 120 },
+  loader: { marginBottom: 190 },
 });

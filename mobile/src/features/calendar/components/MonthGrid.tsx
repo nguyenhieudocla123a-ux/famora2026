@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '../../../shared/ui';
-import { colors, eventTypeStyles, radius, spacing } from '../../../shared/theme';
+import { colors, eventTypeStyles, fonts, radius, spacing } from '../../../shared/theme';
 import { EventOccurrence, EventType, IsoDate, LunarDate } from '../../../shared/types/domain';
 import { WEEKDAY_SHORT, daysInMonth, formatLongDate, toIso, weekdayMon0 } from '../../../shared/utils/date';
 import { lunarOf } from '../../../mocks/lunarMonths';
@@ -113,14 +113,14 @@ function DayCell({ cell, mode, isToday, isSelected, onPress }: DayCellProps) {
         styles.cell,
         styles.day,
         isToday && styles.today,
-        isSelected && styles.selected,
+        isSelected && (isToday ? styles.todaySelected : styles.selected),
         pressed && !isToday && styles.pressed,
       ]}
     >
       <AppText
         variant="bodyStrong"
         align="center"
-        color={isToday ? colors.text : cell.isSunday ? colors.sunday : colors.text}
+        color={isToday ? colors.textOnPrimary : cell.isSunday ? colors.sunday : colors.text}
         style={styles.big}
         maxFontSizeMultiplier={1.3}
       >
@@ -129,7 +129,7 @@ function DayCell({ cell, mode, isToday, isSelected, onPress }: DayCellProps) {
       <AppText
         variant="caption"
         align="center"
-        color={isToday ? colors.text : isLunarMark || mode === 'LUNAR' ? colors.accent : colors.textSecondary}
+        color={isToday ? colors.textOnPrimary : isLunarMark || mode === 'LUNAR' ? colors.accentText : colors.textSecondary}
         style={styles.small}
         maxFontSizeMultiplier={1.2}
       >
@@ -151,15 +151,16 @@ const styles = StyleSheet.create({
   weekday: { flex: 1, paddingVertical: spacing.xs },
   cell: { flex: 1, height: CELL_HEIGHT, margin: 1 },
   day: {
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 2,
   },
   today: { backgroundColor: colors.highlight },
-  selected: { borderWidth: 2, borderColor: colors.primary },
+  selected: { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  todaySelected: { borderWidth: 2, borderColor: colors.primaryDeep },
   pressed: { backgroundColor: colors.surfaceSunken },
-  big: { fontSize: 18, lineHeight: 22 },
+  big: { fontFamily: fonts.heading, fontSize: 18, lineHeight: 22 },
   small: { fontSize: 12, lineHeight: 15 },
   marks: { flexDirection: 'row', gap: 3, height: 7, marginTop: 3 },
   mark: { width: 6, height: 6, borderRadius: 3 },

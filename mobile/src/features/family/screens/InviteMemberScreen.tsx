@@ -126,7 +126,7 @@ function Option({ label, children }: { label: string; children: React.ReactNode 
 const styles = StyleSheet.create({
   codeCard: { gap: spacing.sm, alignItems: 'stretch' },
   code: {
-    fontFamily: fonts.serif,
+    fontFamily: fonts.display,
     fontSize: 36,
     lineHeight: 46,
     letterSpacing: 6,

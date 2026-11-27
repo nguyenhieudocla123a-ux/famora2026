@@ -14,7 +14,7 @@ test('renders the splash, then the login screen', async () => {
     tree = ReactTestRenderer.create(<App />);
   });
   const text = () => JSON.stringify(tree!.toJSON());
-  expect(text()).toContain('Lịch gia đình, nhớ trọn ngày giỗ, ngày vui');
+  expect(text()).toContain('Đang mở Famora');
 
   await ReactTestRenderer.act(async () => {
     jest.advanceTimersByTime(1500);

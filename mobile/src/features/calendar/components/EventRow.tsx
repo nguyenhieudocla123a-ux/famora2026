@@ -43,7 +43,7 @@ export function EventRow({ event, today, onPress, showDate = true }: EventRowPro
         </AppText>
       </View>
       {showDate && (
-        <AppText variant="label" color={soon ? colors.accent : colors.textSecondary}>
+        <AppText variant="label" color={soon ? colors.accentText : colors.textSecondary}>
           {relative}
         </AppText>
       )}

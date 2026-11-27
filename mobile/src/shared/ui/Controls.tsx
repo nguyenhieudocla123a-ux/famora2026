@@ -109,14 +109,16 @@ export function SwitchRow({ label, description, value, onChange }: SwitchRowProp
 const styles = StyleSheet.create({
   segment: {
     flexDirection: 'row',
-    backgroundColor: colors.surfaceSunken,
-    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 4,
   },
   segmentItem: {
     flex: 1,
     minHeight: touch.minHeight - 4,
-    borderRadius: radius.sm,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.sm,

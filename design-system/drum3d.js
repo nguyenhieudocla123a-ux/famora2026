@@ -152,13 +152,17 @@ function faceTexture(size = 1024) {
 
   // faint green patina in the recesses
   g.globalAlpha = 0.18;
-  for (let i = 0; i < 900; i++) {
+  // 2-fold symmetric (every spot repeats at +180deg) so a half turn loops seamlessly
+  for (let i = 0; i < 450; i++) {
     const a = Math.random() * Math.PI * 2;
     const r = Math.sqrt(Math.random()) * R * 0.98;
+    const size = Math.random() * 6 + 1;
     g.fillStyle = PATINA;
-    g.beginPath();
-    g.arc(r * Math.cos(a), r * Math.sin(a), Math.random() * 6 + 1, 0, Math.PI * 2);
-    g.fill();
+    for (const b of [a, a + Math.PI]) {
+      g.beginPath();
+      g.arc(r * Math.cos(b), r * Math.sin(b), size, 0, Math.PI * 2);
+      g.fill();
+    }
   }
   g.globalAlpha = 1;
 
@@ -197,9 +201,14 @@ function sideTexture() {
   band(300, 22);
   band(420, 18);
   g.globalAlpha = 0.32;
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 250; i++) {
     g.fillStyle = PATINA;
-    g.fillRect(Math.random() * 1024, Math.random() * 512, Math.random() * 10, Math.random() * 4);
+    const x = Math.random() * 512;
+    const y = Math.random() * 512;
+    const w = Math.random() * 10;
+    const h = Math.random() * 4;
+    g.fillRect(x, y, w, h);
+    g.fillRect(x + 512, y, w, h); // repeats half way round: 2-fold symmetric
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -308,4 +317,46 @@ export function mountDrum(canvas, { tilt = 0.5, speed = 0.12, distance = 3.4 } =
       pmrem.dispose();
     },
   };
+}
+
+/**
+ * Renders a half turn of the drum (its patterns repeat every 180deg) into a sprite sheet on a 2D
+ * canvas: `frames` cells of `cell` px, `cols` per row, transparent background. Used to ship the
+ * drum to the React Native app as a frame animation.
+ */
+export function renderTurntable(sheet, { frames = 120, cell = 200, cols = 12, tilt = 0.42, distance = 4.4 } = {}) {
+  const rows = Math.ceil(frames / cols);
+  sheet.width = cell * cols;
+  sheet.height = cell * rows;
+  const ctx = sheet.getContext('2d');
+  const glCanvas = document.createElement('canvas');
+  glCanvas.width = glCanvas.height = cell * 2; // supersample, then downscale into the cell
+  const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1);
+  renderer.setSize(cell * 2, cell * 2, false);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+  camera.position.set(0, Math.sin(tilt) * distance, Math.cos(tilt) * distance);
+  camera.lookAt(0, 0.05, 0);
+  const key = new THREE.DirectionalLight('#ffd9a0', 1.9);
+  key.position.set(-2, 4, 2);
+  const bounce = new THREE.DirectionalLight('#c0392b', 0.8);
+  bounce.position.set(2, -1, 1);
+  const rim = new THREE.DirectionalLight('#fff3dc', 1.2);
+  rim.position.set(1, 2, -3);
+  scene.add(key, bounce, rim);
+  const drum = buildDrum();
+  scene.add(drum);
+  for (let i = 0; i < frames; i++) {
+    drum.rotation.y = 0.4 + (Math.PI * i) / frames;
+    renderer.render(scene, camera);
+    ctx.drawImage(glCanvas, (i % cols) * cell, Math.floor(i / cols) * cell, cell, cell);
+  }
+  renderer.dispose();
+  pmrem.dispose();
+  return { frames, cell, cols, rows };
 }

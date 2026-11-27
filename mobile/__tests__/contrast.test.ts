@@ -1,4 +1,4 @@
-import { colors, eventTypeStyles } from '../src/shared/theme';
+import { colors, eventTypeStyles, moods } from '../src/shared/theme';
 
 /** WCAG 2.x relative-luminance contrast ratio. */
 function contrast(a: string, b: string): number {
@@ -12,24 +12,27 @@ function contrast(a: string, b: string): number {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 }
 
+
 const textPairs: [string, string, string][] = [
   ['text on background', colors.text, colors.background],
   ['textSecondary on background', colors.textSecondary, colors.background],
   ['textSecondary on surface', colors.textSecondary, colors.surface],
   ['textSecondary on sunken', colors.textSecondary, colors.surfaceSunken],
   ['white on primary (buttons, today)', colors.textOnPrimary, colors.primary],
-  ['white on primaryDeep (header)', colors.textOnPrimary, colors.primaryDeep],
-  ['muted on primaryDeep (header caption)', colors.textOnPrimaryMuted, colors.primaryDeep],
-  ['goldBright on primaryDeep (header accent)', colors.goldBright, colors.primaryDeep],
   ['primary on background', colors.primary, colors.background],
-  ['accent on surface', colors.accent, colors.surface],
-  ['accent on background', colors.accent, colors.background],
-  ['white on accent (FAB)', colors.textInverse, colors.accent],
-  ['accent on accentSoft', colors.accent, colors.accentSoft],
+  ['primary on surface', colors.primary, colors.surface],
   ['goldText on goldSoft', colors.goldText, colors.goldSoft],
+  ['goldText on background', colors.goldText, colors.background],
   ['danger on surface', colors.danger, colors.surface],
   ['success on background', colors.success, colors.background],
-  ['primary on primarySoft', colors.primary, colors.primarySoft],
+  ['ink on surface (sheet numerals)', colors.ink, colors.surface],
+  ['inkRed on surface (Sunday numerals)', colors.inkRed, colors.surface],
+  ['accentText on accentSoft', colors.accentText, colors.accentSoft],
+  ['text on accent (smile orange)', colors.text, colors.accent],
+  ['primaryDeep on sky band', colors.primaryDeep, colors.sky],
+  ...Object.entries(moods).map(([k, m]): [string, string, string] => [`band text (${k})`, m.onBand, m.band]),
+  ...Object.entries(moods).map(([k, m]): [string, string, string] => [`band muted text (${k})`, m.onBandMuted, m.band]),
+  ...Object.entries(moods).map(([k, m]): [string, string, string] => [`binding text (${k})`, m.onBinding, m.binding]),
 ];
 
 describe('color contrast (WCAG AA, 4.5:1 for text)', () => {

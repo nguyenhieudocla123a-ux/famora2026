@@ -13,6 +13,8 @@ export const radius = {
   sm: 8,
   md: 12,
   lg: 16,
+  xl: 24,
+  xxl: 28,
   pill: 999,
 } as const;
 
@@ -26,4 +28,10 @@ export const iconSize = {
   sm: 18,
   md: 22,
   lg: 28,
+} as const;
+
+/** One soft, blue-tinted lift for cards; Android uses elevation. */
+export const shadow = {
+  card: { shadowColor: '#1A66C9', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  float: { shadowColor: '#1A66C9', shadowOpacity: 0.22, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
 } as const;

@@ -78,7 +78,7 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
                 <ListRow
                   title={`${m.nickname ?? m.fullName}${isMe ? ' (bạn)' : ''}`}
                   subtitle={m.nickname ? m.fullName : `Tham gia ${formatDate(m.joinedAt)}`}
-                  leading={<Avatar name={m.fullName} />}
+                  leading={<Avatar name={m.fullName} nickname={m.nickname} face={isMe ? "bo" : undefined} />}
                   trailing={
                     <View style={styles.trailing}>
                       <RoleBadge role={m.role} />
@@ -117,7 +117,7 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
                 <ListRow
                   title={p.nickname ?? p.fullName}
                   subtitle={`${p.fullName}${p.deathLunar ? ` · giỗ ${p.deathLunar.day}/${p.deathLunar.month} âm` : ''}`}
-                  leading={<Avatar name={p.fullName} />}
+                  leading={<Avatar name={p.fullName} nickname={p.nickname} />}
                 />
               </View>
             ))
@@ -132,7 +132,7 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
             {relatives.map((p, i) => (
               <View key={p.id}>
                 {i > 0 && <Divider />}
-                <ListRow title={p.nickname ?? p.fullName} subtitle={p.fullName} leading={<Avatar name={p.fullName} />} />
+                <ListRow title={p.nickname ?? p.fullName} subtitle={p.fullName} leading={<Avatar name={p.fullName} nickname={p.nickname} />} />
               </View>
             ))}
           </Card>

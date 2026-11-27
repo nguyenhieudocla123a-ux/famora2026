@@ -30,7 +30,7 @@ export function ProfileScreen({ navigation }: TabScreenProps<'Profile'>) {
 
         <Card style={styles.profile}>
           <View>
-            <Avatar name={user.fullName} size={96} />
+            <Avatar name={user.fullName} face="bo" size={96} ring />
             {/* Phase 7: POST /api/users/me/avatar (multipart, ≤ 2 MB, jpg/png/webp) */}
             <Pressable
               onPress={() => notConnected('Đổi ảnh đại diện')}

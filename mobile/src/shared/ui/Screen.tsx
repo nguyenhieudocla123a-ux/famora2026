@@ -6,6 +6,7 @@ import {
   StyleSheet,
   View,
   ViewStyle,
+  StyleProp,
 } from 'react-native';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing } from '../theme';
@@ -15,7 +16,7 @@ interface ScreenProps {
   scroll?: boolean;
   /** Edges to pad; screens under a native header or tab bar only need some of them. */
   edges?: Edge[];
-  contentStyle?: ViewStyle;
+  contentStyle?: StyleProp<ViewStyle>;
   footer?: React.ReactNode;
 }
 
