@@ -15,6 +15,14 @@ public enum ErrorCode {
     WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy"),
+    FAMILY_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy gia đình"),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy thành viên này trong gia đình"),
+    INVITATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy mã mời"),
+    INVITATION_INVALID(HttpStatus.NOT_FOUND, "Mã mời không đúng, đã hết hạn hoặc đã hết lượt dùng"),
+    ALREADY_MEMBER(HttpStatus.CONFLICT, "Bạn đã là thành viên của gia đình này"),
+    OWNER_MUST_TRANSFER(HttpStatus.CONFLICT, "Chủ nhà cần chuyển quyền cho người khác trước khi rời gia đình"),
+    OWNER_IS_PROTECTED(HttpStatus.CONFLICT, "Không thể đổi vai trò hoặc xoá chủ nhà"),
+    NOT_ON_YOURSELF(HttpStatus.CONFLICT, "Không thể thực hiện thao tác này với chính bạn"),
     EMAIL_TAKEN(HttpStatus.CONFLICT, "Email này đã được đăng ký"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra, vui lòng thử lại sau");
 
