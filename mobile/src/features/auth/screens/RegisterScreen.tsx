@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, TextInputInstance } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, UserPlus } from 'lucide-react-native';
-import { AppText, Button, IconButton, Screen, TextField } from '../../../shared/ui';
+import { AppText, Button, Card, IconButton, Screen, TextField } from '../../../shared/ui';
+import { SkyBackground } from '../../../shared/ui/soft/SkyBackground';
+import { Appear } from '../../../shared/ui/soft/Appear';
 import { colors, spacing } from '../../../shared/theme';
 import { useAppDispatch } from '../../../app/store';
 import { register } from '../authSlice';
@@ -22,8 +25,11 @@ const fields: { name: Field; label: string; hint?: string; secure?: boolean; ema
 
 export function RegisterScreen({ navigation }: RootScreenProps<'Register'>) {
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  // "Next" on the keyboard moves to the following field; "Go" on the last one submits
+  const inputs = useRef<(TextInputInstance | null)[]>([]);
   const { control, handleSubmit, formState, setError } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
@@ -53,46 +59,61 @@ export function RegisterScreen({ navigation }: RootScreenProps<'Register'>) {
   });
 
   return (
-    <Screen edges={['top', 'bottom']} contentStyle={styles.content}>
+    <Screen edges={['bottom']} contentStyle={[styles.content, { paddingTop: insets.top + spacing.sm }]}>
+      <SkyBackground height={360} />
       <IconButton icon={ChevronLeft} label="Quay lại đăng nhập" onPress={() => navigation.goBack()} />
-      <View style={styles.header}>
-        <AppText variant="display" color={colors.primary} accessibilityRole="header">
+      <Appear style={styles.header}>
+        <AppText variant="display" color={colors.primaryDeep} accessibilityRole="header">
           Tạo tài khoản
         </AppText>
         <AppText variant="body" color={colors.textSecondary}>
           Sau khi tạo, bạn có thể lập gia đình mới hoặc nhập mã mời từ người thân.
         </AppText>
-      </View>
+      </Appear>
 
-      {fields.map(f => (
-        <Controller
-          key={f.name}
-          control={control}
-          name={f.name}
-          render={({ field }) => (
-            <TextField
-              label={f.label}
-              hint={f.hint}
-              secureTextEntry={f.secure}
-              keyboardType={f.email ? 'email-address' : 'default'}
-              autoCapitalize={f.name === 'fullName' ? 'words' : 'none'}
-              autoComplete={f.email ? 'email' : f.secure ? 'new-password' : 'name'}
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              error={formState.errors[f.name]?.message}
-            />
-          )}
-        />
-      ))}
+      <Appear index={1}>
+        <Card style={styles.form}>
+          {fields.map((f, i) => {
+            const last = i === fields.length - 1;
+            return (
+              <Controller
+                key={f.name}
+                control={control}
+                name={f.name}
+                render={({ field }) => (
+                  <TextField
+                    ref={el => {
+                      inputs.current[i] = el;
+                    }}
+                    label={f.label}
+                    hint={f.hint}
+                    secureTextEntry={f.secure}
+                    keyboardType={f.email ? 'email-address' : 'default'}
+                    autoCapitalize={f.name === 'fullName' ? 'words' : 'none'}
+                    autoComplete={f.email ? 'email' : f.secure ? 'new-password' : 'name'}
+                    returnKeyType={last ? 'go' : 'next'}
+                    submitBehavior={last ? 'blurAndSubmit' : 'submit'}
+                    onSubmitEditing={() => (last ? onSubmit() : inputs.current[i + 1]?.focus())}
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    error={formState.errors[f.name]?.message}
+                  />
+                )}
+              />
+            );
+          })}
 
-      <FormError message={serverError} />
-      <Button label="Tạo tài khoản" icon={UserPlus} onPress={onSubmit} loading={submitting} fullWidth />
+          <FormError message={serverError} />
+          <Button label="Tạo tài khoản" icon={UserPlus} onPress={onSubmit} loading={submitting} fullWidth />
+        </Card>
+      </Appear>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, paddingHorizontal: spacing.xl },
-  header: { gap: spacing.sm, marginBottom: spacing.sm },
+  header: { gap: spacing.sm },
+  form: { gap: spacing.lg, padding: spacing.xl },
 });
