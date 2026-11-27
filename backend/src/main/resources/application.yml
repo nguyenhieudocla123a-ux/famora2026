@@ -28,6 +28,7 @@ famora:
     secret: ${JWT_SECRET:} # blank fails fast at startup with a clear message
     issuer: famora
     access-ttl: 15m
+    refresh-ttl: 14d
 
 server:
   error:

@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Stateless API: every request except sign-up, sign-in and health must carry "Authorization: Bearer jwt".
+ * Stateless API: every request except sign-up, sign-in, token refresh and health must carry "Authorization: Bearer jwt".
  * No session and no CSRF (the API uses no cookies); errors are written as ProblemDetail.
  */
 @Configuration
@@ -28,7 +28,7 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o

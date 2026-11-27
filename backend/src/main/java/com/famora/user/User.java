@@ -70,6 +70,15 @@ public class User {
         updatedAt = Instant.now();
     }
 
+    public void updateProfile(String fullName, LocalDate dateOfBirth) {
+        this.fullName = fullName;
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public Long getId() {
         return id;
     }

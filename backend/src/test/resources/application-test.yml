@@ -5,3 +5,4 @@ famora:
     secret: dGVzdC1vbmx5LWtleS1mb3ItZmFtb3JhLWludGVncmF0aW9uLXRlc3Rz
     issuer: famora
     access-ttl: 15m
+    refresh-ttl: 14d
