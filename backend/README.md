@@ -14,7 +14,7 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 
 `mvn test`: chạy trên một PostgreSQL tạm trong Docker (Testcontainers), không đụng database của bạn.
 
-## API hiện có (Phase 3–5)
+## API hiện có (Phase 3–6a)
 
 | Method | URL | Cần token | Ghi chú |
 |---|---|---|---|
@@ -45,6 +45,12 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 | GET / PUT / DELETE | `/api/families/{id}/events/{eventId}` | Thành viên / người tạo hoặc ADMIN | PUT cần `version`; version cũ → 409 `VERSION_CONFLICT` |
 | GET / POST | `/api/families/{id}/persons` | Thành viên / ADMIN | Hồ sơ người thân; `createAnniversary: true` tự tạo giỗ âm lịch hằng năm |
 | GET / PUT / DELETE | `/api/families/{id}/persons/{personId}` | Thành viên / ADMIN / ADMIN | Ngày mất dương tự đổi ra ngày âm; kèm `nextAnniversary` |
+| GET | `/api/families/{id}/events/{eventId}/reminders` | Thành viên | Cài đặt chung, của tôi, và cái đang áp dụng |
+| PUT / DELETE | `.../reminders/me` | Thành viên | Body `{offsets: [7, 1], time: "08:00"}`; `[]` = tắt; DELETE = về cài đặt chung |
+| PUT | `.../reminders/family` | Người sửa được sự kiện | Cài đặt chung cho cả nhà |
+| GET | `/api/notifications?unreadOnly&page&size` | Có | Chỉ thông báo của mình, kèm `unreadCount` |
+| GET | `/api/notifications/unread-count` | Có | Số trên quả chuông |
+| PUT | `/api/notifications/{id}/read`, `/api/notifications/read-all` | Có | |
 | GET | `/actuator/health` | Không | Kiểm tra app còn sống |
 
 Người không phải thành viên luôn nhận **404** (không lộ gia đình có tồn tại); thành viên thiếu quyền nhận **403**.
@@ -62,3 +68,10 @@ Việt Nam khác Trung Quốc), các năm nhuận, và vòng dương → âm →
 Chỉ lưu **quy tắc** (`NONE` / `YEARLY`, âm hoặc dương), không lưu từng lần. `OccurrenceCalculator` (Java thuần)
 mở rộng trong bộ nhớ: 29/02 → 28/02 năm thường; ngày 30 âm của tháng thiếu → ngày 29; gốc tháng nhuận →
 các năm sau dùng tháng thường; tháng 11–12 âm có thể rơi sang năm dương sau.
+
+## Nhắc nhở
+
+"Lên kế hoạch trước, gửi sau": **planner** (00:05 mỗi đêm, khi khởi động, và mỗi khi sự kiện/cài đặt đổi) ghi
+các lần nhắc 30 ngày tới vào `reminder_schedules` (khoá UNIQUE nên chạy lại không trùng); **dispatcher** (mỗi
+phút) lấy nhắc đến giờ bằng `FOR UPDATE SKIP LOCKED`, tạo thông báo và đánh dấu SENT trong một transaction.
+Mặc định nhắc trước 7 và 1 ngày lúc 8:00 giờ Việt Nam; người đã rời gia đình không nhận.

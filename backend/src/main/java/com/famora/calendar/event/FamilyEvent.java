@@ -148,6 +148,10 @@ public class FamilyEvent {
         deletedAt = now;
     }
 
+    boolean isDeleted() {
+        return deletedAt != null;
+    }
+
     public OccurrenceCalculator.Rule rule() {
         return new OccurrenceCalculator.Rule(calendarType, recurrence, solarDate, getLunarDay(), getLunarMonth(),
                 lunarYear, lunarLeapMonth);

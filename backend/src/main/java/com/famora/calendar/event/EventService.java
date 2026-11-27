@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,12 +42,15 @@ public class EventService {
     private final FamilyEventRepository events;
     private final FamilyAccessService access;
     private final PersonLookup persons;
+    private final ApplicationEventPublisher publisher;
     private final Clock clock;
 
-    public EventService(FamilyEventRepository events, FamilyAccessService access, PersonLookup persons, Clock clock) {
+    public EventService(FamilyEventRepository events, FamilyAccessService access, PersonLookup persons,
+            ApplicationEventPublisher publisher, Clock clock) {
         this.events = events;
         this.access = access;
         this.persons = persons;
+        this.publisher = publisher;
         this.clock = clock;
     }
 
@@ -55,7 +60,9 @@ public class EventService {
         FamilyEvent event = new FamilyEvent(familyId, userId);
         apply(event, req);
         linkPersons(event, familyId, req.personIds());
-        return EventResponse.from(events.saveAndFlush(event));
+        FamilyEvent saved = events.saveAndFlush(event);
+        publisher.publishEvent(new EventChanged(saved.getId()));
+        return EventResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -78,6 +85,7 @@ public class EventService {
             linkPersons(event, familyId, req.personIds());
         }
         events.flush(); // bumps the version now, inside the transaction
+        publisher.publishEvent(new EventChanged(event.getId()));
         return EventResponse.from(event);
     }
 
@@ -87,6 +95,19 @@ public class EventService {
         FamilyEvent event = load(familyId, eventId);
         access.requireCanEditEvent(familyId, userId, event.getCreatedBy());
         event.delete(Instant.now(clock));
+        publisher.publishEvent(new EventChanged(event.getId()));
+    }
+
+    /** A live event as other modules (reminders) need it; empty if deleted. */
+    @Transactional(readOnly = true)
+    public Optional<EventSnapshot> snapshot(long eventId) {
+        return events.findById(eventId).filter(e -> !e.isDeleted()).map(EventSnapshot::of);
+    }
+
+    /** Every live event of every live family: the nightly reminder planner walks them all. */
+    @Transactional(readOnly = true)
+    public List<EventSnapshot> liveSnapshots() {
+        return events.allLive().stream().map(EventSnapshot::of).toList();
     }
 
     /** Every occurrence in [from, to], sorted by date then time; optionally one type only. */

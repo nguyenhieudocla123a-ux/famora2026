@@ -41,6 +41,18 @@ public class FamilyAccessService {
         return require(familyId, userId, FamilyRole.MEMBER);
     }
 
+    /** User ids of everyone currently in the family: who receives the family's reminders. */
+    @Transactional(readOnly = true)
+    public java.util.List<Long> activeUserIds(long familyId) {
+        return members.listActive(familyId).stream().map(com.famora.family.dto.MemberResponse::userId).toList();
+    }
+
+    /** Still an active member of a family that still exists (checked again right before sending). */
+    @Transactional(readOnly = true)
+    public boolean isActiveUser(long familyId, long userId) {
+        return members.findActive(familyId, userId).isPresent();
+    }
+
     /** Whether {@code memberId} is an active member of this very family (for linking a profile to an account). */
     @Transactional(readOnly = true)
     public boolean isActiveMemberOf(long familyId, long memberId) {

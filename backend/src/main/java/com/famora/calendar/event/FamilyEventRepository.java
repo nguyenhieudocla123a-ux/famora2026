@@ -27,6 +27,12 @@ interface FamilyEventRepository extends JpaRepository<FamilyEvent, Long> {
     List<FamilyEvent> candidates(@Param("familyId") Long familyId, @Param("from") LocalDate from,
             @Param("to") LocalDate to);
 
+    @Query("""
+            select e from FamilyEvent e, com.famora.family.Family f
+            where f.id = e.familyId and f.deletedAt is null and e.deletedAt is null
+            """)
+    List<FamilyEvent> allLive();
+
     /** A relative's profile was deleted: the events stay, only the link to them goes. */
     @Modifying
     @Query(value = "delete from event_persons where person_id = :personId", nativeQuery = true)

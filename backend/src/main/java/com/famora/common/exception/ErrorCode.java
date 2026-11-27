@@ -34,6 +34,7 @@ public enum ErrorCode {
     DEATH_DATES_DISAGREE(HttpStatus.BAD_REQUEST, "Ngày mất dương lịch và âm lịch không khớp nhau"),
     ANNIVERSARY_NEEDS_DATE(HttpStatus.BAD_REQUEST, "Cần ngày mất (âm hoặc dương) để tạo ngày giỗ"),
     MEMBER_ALREADY_LINKED(HttpStatus.CONFLICT, "Thành viên này đã có hồ sơ người thân"),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy thông báo"),
     EMAIL_TAKEN(HttpStatus.CONFLICT, "Email này đã được đăng ký"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra, vui lòng thử lại sau");
 

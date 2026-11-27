@@ -1,5 +1,7 @@
 # Tests run against a throwaway PostgreSQL container (see IntegrationTest); no .env needed.
 famora:
+  scheduling:
+    enabled: false # tests drive the planner and dispatcher themselves, with a test clock
   jwt:
     # test-only key (42 bytes, base64); never used outside tests
     secret: dGVzdC1vbmx5LWtleS1mb3ItZmFtb3JhLWludGVncmF0aW9uLXRlc3Rz
