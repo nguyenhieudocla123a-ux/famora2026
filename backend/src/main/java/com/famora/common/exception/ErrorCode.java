@@ -23,6 +23,8 @@ public enum ErrorCode {
     OWNER_MUST_TRANSFER(HttpStatus.CONFLICT, "Chủ nhà cần chuyển quyền cho người khác trước khi rời gia đình"),
     OWNER_IS_PROTECTED(HttpStatus.CONFLICT, "Không thể đổi vai trò hoặc xoá chủ nhà"),
     NOT_ON_YOURSELF(HttpStatus.CONFLICT, "Không thể thực hiện thao tác này với chính bạn"),
+    INVALID_LUNAR_DATE(HttpStatus.BAD_REQUEST, "Ngày âm lịch này không tồn tại"),
+    DATE_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ các năm từ 1901 đến 2099"),
     EMAIL_TAKEN(HttpStatus.CONFLICT, "Email này đã được đăng ký"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra, vui lòng thử lại sau");
 

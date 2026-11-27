@@ -14,7 +14,7 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 
 `mvn test`: chạy trên một PostgreSQL tạm trong Docker (Testcontainers), không đụng database của bạn.
 
-## API hiện có (Phase 3–4b)
+## API hiện có (Phase 3–5a)
 
 | Method | URL | Cần token | Ghi chú |
 |---|---|---|---|
@@ -36,8 +36,17 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 | POST / GET | `/api/families/{id}/invitations` | ADMIN (mời ADMIN: OWNER) | Mã 8 ký tự, mặc định 5 lượt, 7 ngày |
 | DELETE | `/api/families/{id}/invitations/{invId}` | ADMIN | Thu hồi mã |
 | POST | `/api/families/join` | Có | Body `{code, nickname?}` |
+| GET | `/api/calendar/convert?date=2026-11-27` | Có | Dương → âm, can chi ngày/tháng/năm, ngày lễ |
+| GET | `/api/calendar/convert?lunarDay&lunarMonth&lunarYear&leap` | Có | Âm → dương; ngày âm không tồn tại → 400 `INVALID_LUNAR_DATE` |
+| GET | `/api/calendar/month?year=2026&month=11` | Có | 42 ô (thứ Hai đầu tuần) kèm ngày âm và ngày lễ |
 | GET | `/actuator/health` | Không | Kiểm tra app còn sống |
 
 Người không phải thành viên luôn nhận **404** (không lộ gia đình có tồn tại); thành viên thiếu quyền nhận **403**.
 
 Mọi lỗi trả về dạng RFC 7807 `ProblemDetail` kèm `code` và `timestamp`.
+
+## Âm lịch
+
+`com.famora.calendar.lunar` là Java thuần (không Spring): thuật toán thiên văn của Hồ Ngọc Đức tính theo
+**UTC+7**, hỗ trợ 1900–2100. Kiểm chứng bằng: Tết các năm đã công bố (gồm 1968, 1985, 2007, những năm
+Việt Nam khác Trung Quốc), các năm nhuận, và vòng dương → âm → dương cho từng ngày 1900–2100.

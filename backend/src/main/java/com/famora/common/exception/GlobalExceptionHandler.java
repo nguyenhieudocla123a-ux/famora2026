@@ -7,6 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +68,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ProblemDetail p = Problems.of(ErrorCode.MALFORMED_REQUEST, path(request), clock);
         return ResponseEntity.status(p.getStatus()).body(p);
+    }
+
+    /**
+     * Every other framework error (missing parameter, wrong type, wrong method...) keeps Spring's status and
+     * gets the same "code" and "timestamp" fields as ours, so the app parses one shape everywhere.
+     */
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
+        if (body instanceof ProblemDetail p && (p.getProperties() == null || !p.getProperties().containsKey("code"))) {
+            HttpStatus resolved = HttpStatus.resolve(status.value());
+            p.setProperty("code", status.value() == 400 ? ErrorCode.MALFORMED_REQUEST.name()
+                    : resolved != null ? resolved.name() : "ERROR");
+            p.setProperty("timestamp", java.time.Instant.now(clock).toString());
+        }
+        return super.handleExceptionInternal(ex, body, headers, status, request);
     }
 
     private ResponseEntity<ProblemDetail> respond(ErrorCode code, String path) {
