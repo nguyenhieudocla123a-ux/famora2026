@@ -25,6 +25,10 @@ public enum ErrorCode {
     NOT_ON_YOURSELF(HttpStatus.CONFLICT, "Không thể thực hiện thao tác này với chính bạn"),
     INVALID_LUNAR_DATE(HttpStatus.BAD_REQUEST, "Ngày âm lịch này không tồn tại"),
     DATE_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ các năm từ 1901 đến 2099"),
+    EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy sự kiện"),
+    EVENT_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "Sự kiện cần có ngày: ngày dương, hoặc ngày và tháng âm"),
+    RANGE_TOO_LONG(HttpStatus.BAD_REQUEST, "Khoảng ngày tối đa 400 ngày"),
+    VERSION_CONFLICT(HttpStatus.CONFLICT, "Sự kiện vừa được người khác sửa, hãy tải lại rồi thử lại"),
     EMAIL_TAKEN(HttpStatus.CONFLICT, "Email này đã được đăng ký"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra, vui lòng thử lại sau");
 

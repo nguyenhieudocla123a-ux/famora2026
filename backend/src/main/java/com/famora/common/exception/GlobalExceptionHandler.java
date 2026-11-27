@@ -46,6 +46,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return respond(ErrorCode.FORBIDDEN, request.getRequestURI());
     }
 
+    /** Two saves of the same row at the same moment: JPA's @Version caught it. */
+    @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> handleOptimisticLock(RuntimeException ex, HttpServletRequest request) {
+        return respond(ErrorCode.VERSION_CONFLICT, request.getRequestURI());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleUnexpected(Exception ex, HttpServletRequest request) {
         log.error("Unhandled error on {}", request.getRequestURI(), ex);

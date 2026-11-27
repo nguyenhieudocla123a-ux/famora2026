@@ -18,9 +18,11 @@ import com.famora.common.exception.ErrorCode;
 public class FamilyAccessService {
 
     private final FamilyMemberRepository members;
+    private final FamilyRepository families;
 
-    public FamilyAccessService(FamilyMemberRepository members) {
+    public FamilyAccessService(FamilyMemberRepository members, FamilyRepository families) {
         this.members = members;
+        this.families = families;
     }
 
     /** Returns the caller's membership if their role is at least {@code minimum}. */
@@ -37,5 +39,27 @@ public class FamilyAccessService {
     @Transactional(readOnly = true)
     public FamilyMember requireMember(long familyId, long userId) {
         return require(familyId, userId, FamilyRole.MEMBER);
+    }
+
+    /** OWNER and ADMIN always; a MEMBER only when the family allows members to add events. */
+    @Transactional(readOnly = true)
+    public FamilyMember requireCanCreateEvents(long familyId, long userId) {
+        FamilyMember me = requireMember(familyId, userId);
+        boolean allowed = me.getRole().atLeast(FamilyRole.ADMIN)
+                || families.findById(familyId).map(Family::isMemberCanCreateEvents).orElse(false);
+        if (!allowed) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        return me;
+    }
+
+    /** OWNER and ADMIN edit every event; a MEMBER only the events they created. */
+    @Transactional(readOnly = true)
+    public FamilyMember requireCanEditEvent(long familyId, long userId, long eventCreatorId) {
+        FamilyMember me = requireMember(familyId, userId);
+        if (!me.getRole().atLeast(FamilyRole.ADMIN) && eventCreatorId != userId) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        return me;
     }
 }

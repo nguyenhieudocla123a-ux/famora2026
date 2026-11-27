@@ -14,7 +14,7 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 
 `mvn test`: chạy trên một PostgreSQL tạm trong Docker (Testcontainers), không đụng database của bạn.
 
-## API hiện có (Phase 3–5a)
+## API hiện có (Phase 3–5b)
 
 | Method | URL | Cần token | Ghi chú |
 |---|---|---|---|
@@ -39,6 +39,10 @@ Spring Boot 4.1 · Java 17 · PostgreSQL 17 · Flyway · JWT (Spring Security re
 | GET | `/api/calendar/convert?date=2026-11-27` | Có | Dương → âm, can chi ngày/tháng/năm, ngày lễ |
 | GET | `/api/calendar/convert?lunarDay&lunarMonth&lunarYear&leap` | Có | Âm → dương; ngày âm không tồn tại → 400 `INVALID_LUNAR_DATE` |
 | GET | `/api/calendar/month?year=2026&month=11` | Có | 42 ô (thứ Hai đầu tuần) kèm ngày âm và ngày lễ |
+| POST | `/api/families/{id}/events` | Theo quyền | MEMBER chỉ tạo được khi gia đình cho phép |
+| GET | `/api/families/{id}/events?from&to&type` | Thành viên | Trả **các lần xảy ra** trong khoảng (tối đa 400 ngày), kèm ngày âm và số năm |
+| GET | `/api/families/{id}/events/upcoming?days=30` | Thành viên | Từ hôm nay (giờ Việt Nam) |
+| GET / PUT / DELETE | `/api/families/{id}/events/{eventId}` | Thành viên / người tạo hoặc ADMIN | PUT cần `version`; version cũ → 409 `VERSION_CONFLICT` |
 | GET | `/actuator/health` | Không | Kiểm tra app còn sống |
 
 Người không phải thành viên luôn nhận **404** (không lộ gia đình có tồn tại); thành viên thiếu quyền nhận **403**.
@@ -50,3 +54,9 @@ Mọi lỗi trả về dạng RFC 7807 `ProblemDetail` kèm `code` và `timestam
 `com.famora.calendar.lunar` là Java thuần (không Spring): thuật toán thiên văn của Hồ Ngọc Đức tính theo
 **UTC+7**, hỗ trợ 1900–2100. Kiểm chứng bằng: Tết các năm đã công bố (gồm 1968, 1985, 2007, những năm
 Việt Nam khác Trung Quốc), các năm nhuận, và vòng dương → âm → dương cho từng ngày 1900–2100.
+
+## Sự kiện lặp lại
+
+Chỉ lưu **quy tắc** (`NONE` / `YEARLY`, âm hoặc dương), không lưu từng lần. `OccurrenceCalculator` (Java thuần)
+mở rộng trong bộ nhớ: 29/02 → 28/02 năm thường; ngày 30 âm của tháng thiếu → ngày 29; gốc tháng nhuận →
+các năm sau dùng tháng thường; tháng 11–12 âm có thể rơi sang năm dương sau.
