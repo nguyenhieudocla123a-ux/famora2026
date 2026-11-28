@@ -15,6 +15,7 @@ import com.famora.calendar.event.EventService;
 import com.famora.calendar.event.EventSnapshot;
 import com.famora.calendar.lunar.LunarCalendar;
 import com.famora.calendar.lunar.LunarDate;
+import com.famora.common.config.ClockConfig;
 import com.famora.family.FamilyAccessService;
 import com.famora.notification.NotificationService;
 
@@ -48,9 +49,15 @@ public class ReminderDispatcher {
     @Transactional
     public int dispatchDue() {
         Instant now = Instant.now(clock);
+        LocalDate today = LocalDate.ofInstant(now, ClockConfig.VIETNAM);
         int sent = 0;
         List<ReminderSchedule> due = schedules.lockDue(now, BATCH);
         for (ReminderSchedule r : due) {
+            // late on the same day is fine; a day late its words ("Ngày mai") would be wrong: dropped
+            if (LocalDate.ofInstant(r.getFireAt(), ClockConfig.VIETNAM).isBefore(today)) {
+                r.cancel();
+                continue;
+            }
             Optional<EventSnapshot> event = events.snapshot(r.getEventId());
             // the event may be gone, or the person may have left the family since planning: check again
             if (event.isEmpty() || !access.isActiveUser(event.get().familyId(), r.getUserId())) {

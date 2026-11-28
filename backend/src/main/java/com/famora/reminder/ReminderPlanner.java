@@ -112,8 +112,11 @@ public class ReminderPlanner {
                 for (int offset : rule.offsets()) {
                     LocalDate fireDay = o.date().minusDays(offset);
                     Instant fireAt = LocalDateTime.of(fireDay, rule.time()).atZone(ClockConfig.VIETNAM).toInstant();
-                    if (fireDay.isAfter(lastFireDay) || !fireAt.isAfter(now)) {
-                        continue; // outside the window, or already past: never send late reminders
+                    // outside the window, or a day already gone: skipped. A time already past TODAY is still
+                    // queued: the dispatcher sends it late on its next run (the server was off at 08:00, or this
+                    // run came just before the dispatcher's). Its text ("Ngày mai: ...") is right all day.
+                    if (fireDay.isAfter(lastFireDay) || fireDay.isBefore(today)) {
+                        continue;
                     }
                     queued += schedules.upsert(e.id(), userId, o.date(), offset, fireAt);
                 }

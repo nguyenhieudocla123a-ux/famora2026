@@ -114,6 +114,36 @@ class ReminderFlowTest extends IntegrationTest {
     }
 
     @Test
+    @DisplayName("Server tắt lúc 8:00, bật lại 10:00 cùng ngày: lên lịch lại không huỷ nhắc, vẫn gửi muộn")
+    void overdueSameDayIsSentLate() {
+        clock.set(at(today.plusDays(3), 10)); // start-up: the planner runs before the dispatcher's first tick
+        planner.planAll();
+        assertThat(pending(ownerId)).as("08:00 today is still waiting, not cancelled")
+                .containsExactlyInAnyOrder(at(today.plusDays(3), 8), at(today.plusDays(9), 8));
+
+        dispatcher.dispatchDue();
+        assertThat(sent()).as("owner and member, two hours late").isEqualTo(2);
+        planner.planAll();
+        assertThat(sent()).isEqualTo(2);
+        assertThat(pending(ownerId)).as("a sent reminder is not queued again").containsExactly(at(today.plusDays(9), 8));
+    }
+
+    @Test
+    @DisplayName("Trễ sang ngày hôm sau: không gửi (\"Ngày mai\" đã sai), và lên lịch lại cũng không hồi sinh")
+    void overdueNextDayIsDropped() {
+        clock.set(at(today.plusDays(4), 9));
+        dispatcher.dispatchDue();
+        assertThat(sent()).isZero();
+        Integer cancelled = jdbc.queryForObject("select count(*) from reminder_schedules where event_id = ? "
+                + "and status = 'CANCELLED' and occurrence_date = ? and offset_days = 7", Integer.class, eventId,
+                today.plusDays(10));
+        assertThat(cancelled).as("owner and member").isEqualTo(2);
+
+        planner.planAll();
+        assertThat(pending(ownerId)).containsExactly(at(today.plusDays(9), 8));
+    }
+
+    @Test
     @DisplayName("Cài đặt riêng: tắt nhắc chỉ ảnh hưởng mình; xoá cài đặt riêng thì về mặc định")
     void personalSetting() throws Exception {
         api.put(member, reminders() + "/me", "{\"offsets\": []}").andExpect(status().isOk())
@@ -179,7 +209,7 @@ class ReminderFlowTest extends IntegrationTest {
     @DisplayName("Thông báo: đánh dấu đã đọc, đọc hết, lọc chưa đọc; không đụng được thông báo của người khác")
     void notificationsApi() throws Exception {
         api.put(owner, reminders() + "/me", "{\"offsets\": [9, 3]}").andExpect(status().isOk());
-        clock.set(at(today.plusDays(3), 8).plusSeconds(30));
+        clock.set(at(today.plusDays(1), 8).plusSeconds(30)); // 9 days before day+10
         dispatcher.dispatchDue();
         clock.set(at(today.plusDays(7), 8).plusSeconds(30));
         dispatcher.dispatchDue();

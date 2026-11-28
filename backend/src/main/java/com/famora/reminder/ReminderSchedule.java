@@ -60,6 +60,10 @@ public class ReminderSchedule {
         return userId;
     }
 
+    Instant getFireAt() {
+        return fireAt;
+    }
+
     LocalDate getOccurrenceDate() {
         return occurrenceDate;
     }
