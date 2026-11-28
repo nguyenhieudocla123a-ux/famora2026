@@ -3,6 +3,13 @@
 jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);
 jest.mock('react-native-audio-api', () => require('react-native-audio-api/mock'));
 require('react-native-gesture-handler/jestSetup');
+// Google Sign-In's official mock (its package "exports" hide the file, so reach it through the folder).
+require(
+  require('path').join(
+    require('path').dirname(require.resolve('@react-native-google-signin/google-signin/package.json')),
+    'jest/build/jest/setup',
+  ),
+);
 // The secure store keeps the refresh token in memory under Jest.
 jest.mock('react-native-keychain', () => {
   let stored = null;

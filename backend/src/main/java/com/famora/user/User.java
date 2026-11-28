@@ -27,7 +27,8 @@ public class User {
     @Column(nullable = false, length = 254)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 100)
+    /** BCrypt hash; null for an account that only signs in with Google. */
+    @Column(name = "password_hash", length = 100)
     private String passwordHash;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -73,6 +74,10 @@ public class User {
     public void updateProfile(String fullName, LocalDate dateOfBirth) {
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public boolean hasPassword() {
+        return passwordHash != null;
     }
 
     public void changePasswordHash(String passwordHash) {

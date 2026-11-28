@@ -61,12 +61,17 @@ export function ProfileScreen({ navigation }: TabScreenProps<'Profile'>) {
             leading={<Pencil size={iconSize.md} color={colors.primary} />}
             onPress={() => notConnected('Sửa thông tin cá nhân')}
           />
-          <Divider />
-          <ListRow
-            title="Đổi mật khẩu"
-            leading={<KeyRound size={iconSize.md} color={colors.primary} />}
-            onPress={() => notConnected('Đổi mật khẩu')}
-          />
+          {/* an account that only signs in with Google has no password to change */}
+          {user?.hasPassword && (
+            <>
+              <Divider />
+              <ListRow
+                title="Đổi mật khẩu"
+                leading={<KeyRound size={iconSize.md} color={colors.primary} />}
+                onPress={() => notConnected('Đổi mật khẩu')}
+              />
+            </>
+          )}
           <Divider />
           <ListRow
             title="Cài đặt"

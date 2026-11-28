@@ -66,11 +66,18 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
         User user = users.findByEmail(normalise(req.email())).orElse(null);
-        String hash = user != null ? user.getPasswordHash() : dummyHash;
-        boolean matches = passwords.matches(req.password(), hash);
-        if (user == null || !matches || user.getStatus() != UserStatus.ACTIVE) {
+        // no account, or a Google-only account without a password: still spend the same BCrypt time
+        boolean hasPassword = user != null && user.hasPassword();
+        boolean matches = passwords.matches(req.password(), hasPassword ? user.getPasswordHash() : dummyHash);
+        if (!hasPassword || !matches || user.getStatus() != UserStatus.ACTIVE) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
+        return issueTokens(user);
+    }
+
+    /** A fresh session for someone already proven to be {@code user} (password, or Google in GoogleAuthService). */
+    @Transactional
+    public TokenResponse issueTokens(User user) {
         return pair(user, refreshTokens.issue(user.getId()));
     }
 

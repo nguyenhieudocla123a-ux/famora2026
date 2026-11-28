@@ -18,7 +18,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestClockConfig.class)
+@Import({ TestClockConfig.class, FakeGoogleConfig.class })
 public abstract class IntegrationTest {
 
     @ServiceConnection

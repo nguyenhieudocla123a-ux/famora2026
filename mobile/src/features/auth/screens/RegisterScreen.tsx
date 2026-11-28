@@ -11,6 +11,8 @@ import { colors, spacing } from '../../../shared/theme';
 import { useAppDispatch } from '../../../app/store';
 import { register } from '../authSlice';
 import { FormError } from '../components/FormError';
+import { GoogleButton, OrDivider } from '../components/GoogleButton';
+import { useGoogleSignIn } from '../useGoogleSignIn';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { RegisterForm, registerSchema } from '../schemas';
 
@@ -28,6 +30,7 @@ export function RegisterScreen({ navigation }: RootScreenProps<'Register'>) {
   const insets = useSafeAreaInsets();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const { googleLoading, signInWithGoogle } = useGoogleSignIn(setServerError);
   // "Next" on the keyboard moves to the following field; "Go" on the last one submits
   const inputs = useRef<(TextInputInstance | null)[]>([]);
   const { control, handleSubmit, formState, setError } = useForm<RegisterForm>({
@@ -105,7 +108,16 @@ export function RegisterScreen({ navigation }: RootScreenProps<'Register'>) {
           })}
 
           <FormError message={serverError} />
-          <Button label="Tạo tài khoản" icon={UserPlus} onPress={onSubmit} loading={submitting} fullWidth />
+          <Button
+            label="Tạo tài khoản"
+            icon={UserPlus}
+            onPress={onSubmit}
+            loading={submitting}
+            disabled={googleLoading}
+            fullWidth
+          />
+          <OrDivider />
+          <GoogleButton onPress={signInWithGoogle} loading={googleLoading} disabled={submitting} />
         </Card>
       </Appear>
     </Screen>

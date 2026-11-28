@@ -1,4 +1,4 @@
-package com.familyhub
+package com.famora
 
 import android.app.Application
 import com.facebook.react.PackageList

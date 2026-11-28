@@ -29,6 +29,8 @@ famora:
     issuer: famora
     access-ttl: 15m
     refresh-ttl: 14d
+  google:
+    web-client-id: ${GOOGLE_WEB_CLIENT_ID:} # blank: Google sign-in answers "not enabled"
 
 server:
   error:

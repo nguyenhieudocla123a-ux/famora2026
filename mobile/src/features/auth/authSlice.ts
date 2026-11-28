@@ -4,6 +4,7 @@ import { tokenStore } from '../../shared/api/tokenStore';
 import { ApiError, toApiError } from '../../shared/api/apiError';
 import { baseApi } from '../../shared/api/baseApi';
 import type { UserProfile } from '../../shared/types/domain';
+import { forgetGoogleAccount, getGoogleIdToken, GoogleSignInError } from './google';
 
 /**
  * The session: booting (reading the stored refresh token), signed out, or signed in with a user.
@@ -22,6 +23,7 @@ interface UserDto {
   fullName: string;
   dateOfBirth?: string;
   avatarUrl?: string;
+  hasPassword: boolean;
 }
 
 const toUser = (u: UserDto): UserProfile => ({
@@ -30,6 +32,7 @@ const toUser = (u: UserDto): UserProfile => ({
   fullName: u.fullName,
   dateOfBirth: u.dateOfBirth,
   avatarUrl: u.avatarUrl,
+  hasPassword: u.hasPassword,
 });
 
 async function fetchMe(): Promise<UserProfile> {
@@ -70,6 +73,34 @@ export const login = createAsyncThunk<UserProfile, { email: string; password: st
   },
 );
 
+/**
+ * "Tiếp tục với Google": Google's picker gives an ID token, the backend checks it and answers with the usual
+ * Famora token pair. Closing the picker rejects with no payload (nothing to show).
+ */
+export const googleSignIn = createAsyncThunk<UserProfile, void, { rejectValue: ApiError }>(
+  'auth/google',
+  async (_, { rejectWithValue }) => {
+    let idToken: string | null;
+    try {
+      idToken = await getGoogleIdToken();
+    } catch (e) {
+      const message = e instanceof GoogleSignInError ? e.message : 'Không đăng nhập được bằng Google.';
+      return rejectWithValue({ status: 0, code: 'GOOGLE_SIGN_IN_FAILED', message, fieldErrors: {} });
+    }
+    if (!idToken) {
+      throw new Error('cancelled');
+    }
+    try {
+      const res = await apiClient.http.post<TokenPair>('/api/auth/google', { idToken });
+      await apiClient.saveTokens(res.data);
+      return await fetchMe();
+    } catch (e) {
+      await forgetGoogleAccount(); // let the person pick another account next time
+      return rejectWithValue(toApiError(e));
+    }
+  },
+);
+
 export const register = createAsyncThunk<
   UserProfile,
   { fullName: string; email: string; password: string },
@@ -96,6 +127,7 @@ export const logout = createAsyncThunk('auth/logout', async (_, { dispatch }) =>
     }
   }
   await tokenStore.clear();
+  await forgetGoogleAccount();
   dispatch(baseApi.util.resetApiState());
 });
 
@@ -113,6 +145,7 @@ const authSlice = createSlice({
       )
       .addCase(bootstrap.rejected, () => ({ status: 'signedOut' as const, user: null }))
       .addCase(login.fulfilled, (_, { payload }) => ({ status: 'signedIn' as const, user: payload }))
+      .addCase(googleSignIn.fulfilled, (_, { payload }) => ({ status: 'signedIn' as const, user: payload }))
       .addCase(register.fulfilled, (_, { payload }) => ({ status: 'signedIn' as const, user: payload }))
       .addCase(logout.fulfilled, () => ({ status: 'signedOut' as const, user: null }));
   },

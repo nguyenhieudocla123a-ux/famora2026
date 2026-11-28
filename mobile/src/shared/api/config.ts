@@ -10,6 +10,13 @@ import { Platform } from 'react-native';
  */
 export const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
 
+/**
+ * Google sign-in: the OAuth "Web application" client ID. The Google SDK asks for an ID token issued for it,
+ * and the backend accepts only tokens with this audience (its GOOGLE_WEB_CLIENT_ID). A client ID is public
+ * (it ships inside every app), unlike a client secret, which Famora never uses.
+ */
+export const GOOGLE_WEB_CLIENT_ID = '934459874749-n3vov2oa4lsc7tskn15q0t847dkna8tm.apps.googleusercontent.com';
+
 export const WS_URL = API_BASE_URL.replace(/^http/, 'ws') + '/ws';
 
 /** Give up on a request after this long; the UI shows a retry. */

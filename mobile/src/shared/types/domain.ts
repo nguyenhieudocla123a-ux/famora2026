@@ -32,6 +32,8 @@ export interface UserProfile {
   email: string;
   dateOfBirth?: IsoDate;
   avatarUrl?: string;
+  /** False for an account that only signs in with Google. */
+  hasPassword: boolean;
 }
 
 export interface FamilySummary {

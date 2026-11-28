@@ -12,6 +12,8 @@ import { colors, spacing } from '../../../shared/theme';
 import { useAppDispatch } from '../../../app/store';
 import { login } from '../authSlice';
 import { FormError } from '../components/FormError';
+import { GoogleButton, OrDivider } from '../components/GoogleButton';
+import { useGoogleSignIn } from '../useGoogleSignIn';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { LoginForm, loginSchema } from '../schemas';
 
@@ -21,6 +23,7 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
   const insets = useSafeAreaInsets();
   const passwordRef = useRef<TextInputInstance>(null);
   const [submitting, setSubmitting] = useState(false);
+  const { googleLoading, signInWithGoogle } = useGoogleSignIn(setServerError);
   const { control, handleSubmit, formState, setError } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -97,7 +100,9 @@ export function LoginScreen({ navigation }: RootScreenProps<'Login'>) {
       />
 
       <FormError message={serverError} />
-      <Button label="Đăng nhập" icon={LogIn} onPress={onSubmit} loading={submitting} fullWidth />
+      <Button label="Đăng nhập" icon={LogIn} onPress={onSubmit} loading={submitting} disabled={googleLoading} fullWidth />
+      <OrDivider />
+      <GoogleButton onPress={signInWithGoogle} loading={googleLoading} disabled={submitting} />
       </Card>
       </Appear>
 

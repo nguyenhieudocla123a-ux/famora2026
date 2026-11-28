@@ -28,7 +28,8 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/google",
+                        "/api/auth/refresh").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 // the WebSocket handshake carries no header we can rely on: the JWT is checked on the STOMP CONNECT frame
                 .requestMatchers("/ws").permitAll()

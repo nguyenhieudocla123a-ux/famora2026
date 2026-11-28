@@ -38,6 +38,9 @@ public class UserService {
     @Transactional
     public void changePassword(long userId, ChangePasswordRequest req) {
         User user = activeUser(userId);
+        if (!user.hasPassword()) {
+            throw new BusinessException(ErrorCode.PASSWORD_NOT_SET);
+        }
         if (!passwords.matches(req.currentPassword(), user.getPasswordHash())) {
             throw new BusinessException(ErrorCode.WRONG_PASSWORD);
         }
