@@ -127,7 +127,7 @@ public class EventService {
             }
             for (OccurrenceCalculator.Occurrence o : OccurrenceCalculator.expand(e.rule(), from, to)) {
                 LunarDate l = LunarCalendar.toLunar(o.date());
-                out.add(new OccurrenceResponse(e.getId(), o.date(), l.day(), l.month(), l.leap(), e.getType(),
+                out.add(new OccurrenceResponse(e.getId(), o.date(), l.day(), l.month(), l.year(), l.leap(), e.getType(),
                         e.getTitle(), e.getLocation(), e.getStartTime(), e.getCalendarType(), e.getRecurrence(),
                         o.anniversary()));
             }

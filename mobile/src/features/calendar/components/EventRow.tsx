@@ -4,7 +4,7 @@ import { AppText, EventTypeIcon } from '../../../shared/ui';
 import { colors, eventTypeStyles, spacing, touch } from '../../../shared/theme';
 import { EventOccurrence, IsoDate } from '../../../shared/types/domain';
 import { formatDayMonth, relativeDays, weekdayName } from '../../../shared/utils/date';
-import { formatLunar } from '../../../mocks/lunarMonths';
+import { formatLunar } from '../../../shared/utils/lunarFormat';
 
 interface EventRowProps {
   event: EventOccurrence;

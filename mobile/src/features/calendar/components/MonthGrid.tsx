@@ -2,15 +2,14 @@ import React, { memo, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '../../../shared/ui';
 import { colors, eventTypeStyles, fonts, radius, spacing } from '../../../shared/theme';
-import { EventOccurrence, EventType, IsoDate, LunarDate } from '../../../shared/types/domain';
-import { WEEKDAY_SHORT, daysInMonth, formatLongDate, toIso, weekdayMon0 } from '../../../shared/utils/date';
-import { lunarOf } from '../../../mocks/lunarMonths';
+import { CalendarCell, EventOccurrence, EventType, IsoDate, LunarDate } from '../../../shared/types/domain';
+import { WEEKDAY_SHORT, formatLongDate, weekdayMon0 } from '../../../shared/utils/date';
 
 export type CalendarMode = 'SOLAR' | 'LUNAR';
 
 interface MonthGridProps {
-  year: number;
-  month: number;
+  /** The server's 42-cell grid (Monday first), with lunar dates and holidays. */
+  cells: CalendarCell[];
   today: IsoDate;
   selected: IsoDate;
   mode: CalendarMode;
@@ -24,28 +23,36 @@ interface Cell {
   lunar: LunarDate | null;
   types: EventType[];
   isSunday: boolean;
+  /** A public holiday prints red like a Sunday; any holiday is read out to screen readers. */
+  holiday: { name: string; publicHoliday: boolean } | null;
 }
 
 /** Monday-first month grid; each day shows its solar and lunar number and up to three event marks. */
-export const MonthGrid = memo(function MonthGridInner({ year, month, today, selected, mode, events, onSelect }: MonthGridProps) {
+export const MonthGrid = memo(function MonthGridInner({ cells, today, selected, mode, events, onSelect }: MonthGridProps) {
   const weeks = useMemo(() => {
-    const first = toIso({ y: year, m: month, d: 1 });
-    const lead = weekdayMon0(first);
-    const cells: (Cell | null)[] = Array.from({ length: lead }, () => null);
-    for (let d = 1; d <= daysInMonth(year, month); d++) {
-      const date = toIso({ y: year, m: month, d });
-      const types = [...new Set(events.filter(e => e.date === date).map(e => e.type))];
-      cells.push({ date, day: d, lunar: lunarOf(date), types, isSunday: weekdayMon0(date) === 6 });
-    }
-    while (cells.length % 7 !== 0) {
-      cells.push(null);
-    }
     const rows: (Cell | null)[][] = [];
     for (let i = 0; i < cells.length; i += 7) {
-      rows.push(cells.slice(i, i + 7));
+      const row = cells.slice(i, i + 7);
+      if (!row.some(c => c.inMonth)) {
+        continue; // the server always sends 6 weeks; drop a trailing week of next month only
+      }
+      rows.push(
+        row.map(c =>
+          c.inMonth
+            ? {
+                date: c.date,
+                day: Number(c.date.slice(8, 10)),
+                lunar: c.lunar,
+                types: [...new Set(events.filter(e => e.date === c.date).map(e => e.type))],
+                isSunday: weekdayMon0(c.date) === 6,
+                holiday: c.holidays[0] ?? null,
+              }
+            : null,
+        ),
+      );
     }
     return rows;
-  }, [year, month, events]);
+  }, [cells, events]);
 
   return (
     <View accessibilityRole="grid">
@@ -98,6 +105,7 @@ function DayCell({ cell, mode, isToday, isSelected, onPress }: DayCellProps) {
     formatLongDate(cell.date),
     lunar ? `âm lịch ${lunar.day} tháng ${lunar.month}` : null,
     isToday ? 'hôm nay' : null,
+    cell.holiday?.name ?? null,
     eventNames || null,
   ]
     .filter(Boolean)
@@ -120,7 +128,7 @@ function DayCell({ cell, mode, isToday, isSelected, onPress }: DayCellProps) {
       <AppText
         variant="bodyStrong"
         align="center"
-        color={isToday ? colors.textOnPrimary : cell.isSunday ? colors.sunday : colors.text}
+        color={isToday ? colors.textOnPrimary : cell.isSunday || cell.holiday?.publicHoliday ? colors.sunday : colors.text}
         style={styles.big}
         maxFontSizeMultiplier={1.3}
       >

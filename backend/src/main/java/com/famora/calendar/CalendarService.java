@@ -58,7 +58,7 @@ public class CalendarService {
         for (int i = 0; i < GRID_DAYS; i++) {
             LocalDate d = gridStart.plusDays(i);
             LunarDate l = LunarCalendar.toLunar(d);
-            cells.add(new Cell(d, d.getMonthValue() == month, l.day(), l.month(), l.leap(), holidays(d, l)));
+            cells.add(new Cell(d, d.getMonthValue() == month, l.day(), l.month(), l.year(), l.leap(), holidays(d, l)));
         }
         return new Month(year, month, subtitle(first, first.withDayOfMonth(first.lengthOfMonth())), cells);
     }

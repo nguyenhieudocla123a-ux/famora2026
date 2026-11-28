@@ -61,7 +61,8 @@ public final class EventDtos {
      *
      * @param anniversary years since the original date (birthday age, wedding years); null when unknown
      */
-    public record OccurrenceResponse(Long eventId, LocalDate date, int lunarDay, int lunarMonth, boolean lunarLeap,
+    public record OccurrenceResponse(Long eventId, LocalDate date, int lunarDay, int lunarMonth, int lunarYear,
+            boolean lunarLeap,
             EventType type, String title, String location, LocalTime startTime, CalendarType calendarType,
             Recurrence recurrence, Integer anniversary) {
     }

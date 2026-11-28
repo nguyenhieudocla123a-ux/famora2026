@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -29,14 +29,15 @@ import {
 } from '../../../shared/theme';
 import type { DayMood } from '../../../shared/theme';
 import { EventOccurrence, IsoDate } from '../../../shared/types/domain';
-import { diffDays, formatDayMonth, todayVn } from '../../../shared/utils/date';
+import { addDays, diffDays, formatDayMonth, todayVn } from '../../../shared/utils/date';
 import { useSession } from '../../../app/session/SessionContext';
 import type { TabScreenProps } from '../../../app/navigation/types';
-import { formatLunar, lunarOf } from '../../../mocks/lunarMonths';
+import { formatLunar } from '../../../shared/utils/lunarFormat';
+import { useGetUpcomingQuery } from '../../calendar/api/calendarApi';
+import { useLunarDays } from '../../calendar/useLunarDays';
 import { useGetMembersQuery } from '../../family/api/familyApi';
 import { WelcomeCard } from '../components/WelcomeCard';
 import { EventRow } from '../../calendar/components/EventRow';
-import { eventsOn, upcoming } from '../../calendar/eventQueries';
 import { TearOffSheet, SheetDay } from '../components/TearOffSheet';
 import { FamilyHero } from '../components/FamilyHero';
 
@@ -99,19 +100,26 @@ export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
   // a brand-new account belongs to no family yet: welcome them instead of showing an empty family card
   const noFamily = !familiesLoading && !activeFamily;
 
+  // one request for the next 120 days feeds the sheet, the memorial card and the "upcoming" list
+  const { data: soon = [] } = useGetUpcomingQuery({ familyId, days: 120 }, { skip: !familyId });
+  // lunar dates come from the server, for the month on the sheet and the next one
+  const [sheetDate, setSheetDate] = useState(today);
+  const { lunarOf } = useLunarDays(sheetDate);
+
   const getDay = useCallback(
     (date: IsoDate): SheetDay => ({
       date,
       lunar: lunarOf(date),
-      events: eventsOn(familyId, date),
+      events: soon.filter(e => e.date === date),
     }),
-    [familyId],
+    [lunarOf, soon],
   );
-  const mood = moodOf(eventsOn(familyId, today).map(e => e.type));
+  const mood = moodOf(soon.filter(e => e.date === today).map(e => e.type));
   const sticker = stickerFor(mood, h);
-  const nextMemorial = upcoming(familyId, today, 120, ['DEATH_ANNIVERSARY'])[0];
-  const others = upcoming(familyId, today, 30)
-    .filter(e => e.type !== 'DEATH_ANNIVERSARY')
+  const nextMemorial = soon.find(e => e.type === 'DEATH_ANNIVERSARY');
+  const in30 = addDays(today, 30);
+  const others = soon
+    .filter(e => e.type !== 'DEATH_ANNIVERSARY' && e.date <= in30)
     .slice(0, 3);
   const open = (e: EventOccurrence) =>
     navigation.navigate('EventDetail', { eventId: e.eventId, date: e.date });
@@ -238,7 +246,7 @@ export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
           )}
         </Appear>
         <Appear index={4} style={styles.sheet}>
-          <TearOffSheet startDate={today} getDay={getDay} />
+          <TearOffSheet startDate={today} getDay={getDay} onChange={setSheetDate} />
         </Appear>
 
         {nextMemorial && (

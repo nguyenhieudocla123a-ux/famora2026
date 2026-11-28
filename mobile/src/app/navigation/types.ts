@@ -22,7 +22,8 @@ export type RootStackParamList = {
   AddPerson: { familyId: string };
   InviteMember: { familyId: string };
   EventDetail: { eventId: string; date: IsoDate };
-  CreateEvent: { date?: IsoDate } | undefined;
+  /** With eventId: edit that event instead of creating one. */
+  CreateEvent: { date?: IsoDate; eventId?: string } | undefined;
   Notifications: undefined;
   Settings: undefined;
 };

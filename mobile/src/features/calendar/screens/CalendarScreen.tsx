@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronRight, Plus, RotateCcw } from 'lucide-react-native';
-import { AppText, Card, Divider, EmptyState, Segmented } from '../../../shared/ui';
+import { AppText, Card, Divider, EmptyState, LoadingState, Segmented } from '../../../shared/ui';
 import { colors, eventTypeOrder, eventTypeStyles, fonts, moodOf, moods, radius, shadow, spacing } from '../../../shared/theme';
 import { Candle, FallingHearts } from '../../../shared/ui/family/Ambient';
 import { SkyBackground } from '../../../shared/ui/soft/SkyBackground';
@@ -13,10 +13,11 @@ import { IsoDate } from '../../../shared/types/domain';
 import { daysInMonth, formatLongDate, parseIso, toIso, todayVn } from '../../../shared/utils/date';
 import { useSession } from '../../../app/session/SessionContext';
 import type { TabScreenProps } from '../../../app/navigation/types';
-import { MOCK_RANGE, canChiYear, formatLunar, lunarMonthName, lunarOf } from '../../../mocks/lunarMonths';
+import { canChiYear } from '../../../shared/utils/canChi';
+import { formatLunar, lunarMonthName } from '../../../shared/utils/lunarFormat';
+import { useGetMonthQuery, useGetOccurrencesQuery, useGetUpcomingQuery } from '../api/calendarApi';
 import { CalendarMode, MonthGrid } from '../components/MonthGrid';
 import { EventRow } from '../components/EventRow';
-import { eventsInRange, eventsOn, upcoming } from '../eventQueries';
 
 type CalendarView = 'MONTH' | 'UPCOMING';
 
@@ -47,13 +48,16 @@ export function CalendarScreen({ navigation, route }: TabScreenProps<'Calendar'>
   const familyId = activeFamily?.id ?? '';
   const from = toIso({ y: cursor.y, m: cursor.m, d: 1 });
   const to = toIso({ y: cursor.y, m: cursor.m, d: daysInMonth(cursor.y, cursor.m) });
-  const monthEvents = useMemo(() => eventsInRange(familyId, from, to), [familyId, from, to]);
-  const dayEvents = useMemo(() => eventsOn(familyId, selected), [familyId, selected]);
-  const upcomingEvents = useMemo(() => upcoming(familyId, today, 90), [familyId, today]);
+  const monthQuery = useGetMonthQuery({ year: cursor.y, month: cursor.m });
+  const { data: monthEvents = [] } = useGetOccurrencesQuery({ familyId, from, to }, { skip: !familyId });
+  const { data: upcomingEvents = [] } = useGetUpcomingQuery({ familyId, days: 90 }, { skip: !familyId });
+  const dayEvents = useMemo(() => monthEvents.filter(e => e.date === selected), [monthEvents, selected]);
+  const cells = monthQuery.data?.cells ?? [];
 
+  // the server's lunar engine covers 1901-2099
   const idx = monthIndex(cursor.y, cursor.m);
-  const canPrev = idx > monthIndex(MOCK_RANGE.first.y, MOCK_RANGE.first.m);
-  const canNext = idx < monthIndex(MOCK_RANGE.last.y, MOCK_RANGE.last.m);
+  const canPrev = idx > monthIndex(1901, 1);
+  const canNext = idx < monthIndex(2099, 12);
   const shift = (delta: number) => {
     const n = idx + delta;
     const y = Math.floor(n / 12);
@@ -62,21 +66,14 @@ export function CalendarScreen({ navigation, route }: TabScreenProps<'Calendar'>
     setSelected(toIso({ y, m, d: 1 }));
   };
 
-  const firstLunar = lunarOf(from);
-  const lastLunar = lunarOf(to);
-  const lunarSubtitle =
-    firstLunar && lastLunar
-      ? `${capitalize(lunarMonthName(firstLunar.month, firstLunar.leap))}${
-          firstLunar.month !== lastLunar.month ? ` – ${lunarMonthName(lastLunar.month, lastLunar.leap)}` : ''
-        } năm ${canChiYear(lastLunar.year)}`
-      : '';
-  const selectedLunar = lunarOf(selected);
+  const lunarSubtitle = monthQuery.data?.lunarSubtitle ?? '';
+  const selectedLunar = cells.find(c => c.date === selected)?.lunar ?? null;
   // the selected day's card takes its mood: a candle on a giỗ, falling hearts on a birthday
   const selectedMood = moodOf(dayEvents.map(e => e.type));
   const mood = moods[selectedMood];
   const onSelectDay = (date: IsoDate) => {
     setSelected(date);
-    const m = moodOf(eventsOn(familyId, date).map(e => e.type));
+    const m = moodOf(monthEvents.filter(e => e.date === date).map(e => e.type));
     const cue = moods[m].sound;
     playSound(cue === 'bell' ? 'chuong' : cue, m === 'ordinary' ? 0.6 : 0.8);
   };
@@ -160,15 +157,18 @@ export function CalendarScreen({ navigation, route }: TabScreenProps<'Calendar'>
                     { value: 'LUNAR', label: 'Âm lịch' },
                   ]}
                 />
+                {monthQuery.isLoading ? (
+                  <LoadingState />
+                ) : (
                 <MonthGrid
-                  year={cursor.y}
-                  month={cursor.m}
+                  cells={cells}
                   today={today}
                   selected={selected}
                   mode={mode}
                   events={monthEvents}
                   onSelect={onSelectDay}
                 />
+                )}
                 <View style={styles.legend} accessibilityLabel="Chú thích màu loại sự kiện">
                   {eventTypeOrder.map(t => (
                     <View key={t} style={styles.legendItem}>

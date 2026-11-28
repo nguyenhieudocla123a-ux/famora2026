@@ -21,8 +21,8 @@ public final class CalendarViews {
     }
 
     /** One cell of the month grid. {@code inMonth} is false for the leading/trailing days of other months. */
-    public record Cell(LocalDate date, boolean inMonth, int lunarDay, int lunarMonth, boolean lunarLeap,
-            List<HolidayView> holidays) {
+    public record Cell(LocalDate date, boolean inMonth, int lunarDay, int lunarMonth, int lunarYear,
+            boolean lunarLeap, List<HolidayView> holidays) {
     }
 
     /** 42 cells (6 weeks, Monday first) plus the lunar months the solar month spans. */

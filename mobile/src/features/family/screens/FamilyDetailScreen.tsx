@@ -9,12 +9,16 @@ import { useDissolveFamilyMutation, useLeaveFamilyMutation } from '../api/family
 import { useSession } from '../../../app/session/SessionContext';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { EventRow } from '../../calendar/components/EventRow';
-import { upcoming } from '../../calendar/eventQueries';
+import { useGetUpcomingQuery } from '../../calendar/api/calendarApi';
 import { can } from '../permissions';
 
 export function FamilyDetailScreen({ route, navigation }: RootScreenProps<'FamilyDetail'>) {
   const { families, setActiveFamily } = useSession();
   const family = families.find(f => f.id === route.params.familyId);
+  const { data: events = [] } = useGetUpcomingQuery(
+    { familyId: route.params.familyId, days: 30 },
+    { skip: !family },
+  );
   const [leaveFamily] = useLeaveFamilyMutation();
   const [dissolveFamily] = useDissolveFamilyMutation();
 
@@ -33,7 +37,6 @@ export function FamilyDetailScreen({ route, navigation }: RootScreenProps<'Famil
   }
 
   const today = todayVn();
-  const events = upcoming(family.id, today, 30);
   const role = family.myRole;
 
   const openCalendar = () => {

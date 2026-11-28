@@ -64,12 +64,11 @@ export interface FamilyPerson {
   nextAnniversary?: IsoDate;
 }
 
-/** One concrete occurrence of an event on a solar date (recurring events expand into many). */
+/** One concrete occurrence of an event on a solar date (recurring events expand into many), from the server. */
 export interface EventOccurrence {
   eventId: string;
   familyId: string;
   title: string;
-  description?: string;
   type: EventType;
   calendarType: CalendarType;
   recurrence: Recurrence;
@@ -77,10 +76,38 @@ export interface EventOccurrence {
   lunar: LunarDate | null;
   startTime?: string;
   location?: string;
-  relatedPersonIds: string[];
-  createdByName: string;
-  canEdit: boolean;
-  reminderDaysBefore: number[];
+  /** Years since the first occurrence (age, years married); absent when the first year is unknown. */
+  anniversary?: number;
+}
+
+/** An event itself (its rule), as edited on the detail and form screens. */
+export interface EventDetail {
+  id: string;
+  familyId: string;
+  createdBy: string;
+  type: EventType;
+  title: string;
+  description?: string;
+  location?: string;
+  calendarType: CalendarType;
+  solarDate?: IsoDate;
+  lunarDay?: number;
+  lunarMonth?: number;
+  lunarYear?: number;
+  lunarLeapMonth: boolean;
+  startTime?: string;
+  recurrence: Recurrence;
+  /** Optimistic lock: sent back on update, a stale one gets 409. */
+  version: number;
+  personIds: string[];
+}
+
+/** One day of the month grid, with its lunar date and holidays, from the server. */
+export interface CalendarCell {
+  date: IsoDate;
+  inMonth: boolean;
+  lunar: LunarDate;
+  holidays: { name: string; lunar: boolean; publicHoliday: boolean }[];
 }
 
 export interface AppNotification {
