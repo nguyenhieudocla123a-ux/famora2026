@@ -47,8 +47,12 @@ export const bootstrap = createAsyncThunk<UserProfile | null>('auth/bootstrap', 
     const res = await apiClient.http.post<TokenPair>('/api/auth/refresh', { refreshToken });
     await apiClient.saveTokens(res.data);
     return await fetchMe();
-  } catch {
-    await tokenStore.clear();
+  } catch (e) {
+    // Forget the token only when the server refused it. Offline or server down: keep it, so the next start
+    // (with a connection) signs the user straight back in instead of asking for the password again.
+    if (toApiError(e).status !== 0) {
+      await tokenStore.clear();
+    }
     return null;
   }
 });

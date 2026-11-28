@@ -1,35 +1,83 @@
-import React from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check } from 'lucide-react-native';
 import { AppText, Button, Card, Screen, SwitchRow, TextField } from '../../../shared/ui';
 import { colors, spacing } from '../../../shared/theme';
-import { notConnected } from '../../../shared/utils/notConnected';
+import { runAction } from '../../../shared/api/runAction';
+import { useSession } from '../../../app/session/SessionContext';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { CreateFamilyForm, createFamilySchema } from '../schemas';
+import { useCreateFamilyMutation, useUpdateFamilyMutation } from '../api/familyApi';
 
-export function CreateFamilyScreen({ navigation }: RootScreenProps<'CreateFamily'>) {
-  const { control, handleSubmit, formState } = useForm<CreateFamilyForm>({
+/** Creates a family (the creator becomes OWNER), or edits one when opened with a familyId. */
+export function CreateFamilyScreen({ navigation, route }: RootScreenProps<'CreateFamily'>) {
+  const editId = route.params?.familyId;
+  const { families, setActiveFamily } = useSession();
+  const editing = editId ? families.find(f => f.id === editId) : undefined;
+  const [createFamily] = useCreateFamilyMutation();
+  const [updateFamily] = useUpdateFamilyMutation();
+  const [saving, setSaving] = useState(false);
+  const { control, handleSubmit, formState, setError } = useForm<CreateFamilyForm>({
     resolver: zodResolver(createFamilySchema),
-    defaultValues: { name: '', description: '', memberCanCreateEvents: true },
+    defaultValues: {
+      name: editing?.name ?? '',
+      description: editing?.description ?? '',
+      memberCanCreateEvents: editing?.memberCanCreateEvents ?? true,
+    },
   });
 
-  // Phase 7: POST /api/families — the creator becomes OWNER in the same transaction.
-  const onSubmit = handleSubmit(() => notConnected('Tạo gia đình'));
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: editId ? 'Sửa thông tin gia đình' : 'Tạo gia đình' });
+  }, [navigation, editId]);
+
+  const onSubmit = handleSubmit(async values => {
+    setSaving(true);
+    const body = { name: values.name.trim(), description: values.description.trim(), memberCanCreateEvents: values.memberCanCreateEvents };
+    const saved = await runAction(
+      () => (editId ? updateFamily({ familyId: editId, ...body }).unwrap() : createFamily(body).unwrap()),
+      e => {
+        const name = e.fieldErrors.name;
+        if (name) {
+          setError('name', { message: name });
+          return true;
+        }
+        return false;
+      },
+    );
+    setSaving(false);
+    if (!saved) {
+      return;
+    }
+    if (editId) {
+      navigation.goBack();
+    } else {
+      setActiveFamily(saved.id);
+      navigation.replace('FamilyDetail', { familyId: saved.id });
+    }
+  });
 
   return (
     <Screen
       footer={
         <View style={styles.footer}>
           <Button label="Hủy" variant="secondary" onPress={() => navigation.goBack()} />
-          <Button label="Tạo gia đình" icon={Check} onPress={onSubmit} style={styles.flex} />
+          <Button
+            label={editId ? 'Lưu' : 'Tạo gia đình'}
+            icon={Check}
+            onPress={onSubmit}
+            loading={saving}
+            style={styles.flex}
+          />
         </View>
       }
     >
-      <AppText variant="body" color={colors.textSecondary}>
-        Bạn sẽ là chủ nhà của gia đình này. Sau khi tạo, hãy mời người thân bằng mã mời.
-      </AppText>
+      {!editId && (
+        <AppText variant="body" color={colors.textSecondary}>
+          Bạn sẽ là chủ nhà của gia đình này. Sau khi tạo, hãy mời người thân bằng mã mời.
+        </AppText>
+      )}
       <Controller
         control={control}
         name="name"

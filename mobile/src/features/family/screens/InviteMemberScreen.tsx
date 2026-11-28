@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Alert, Share, StyleSheet, View } from 'react-native';
 import { KeyRound, Share2, XCircle } from 'lucide-react-native';
-import { AppText, Button, Card, Divider, Screen, SectionHeader, Segmented } from '../../../shared/ui';
+import { AppText, Button, Card, Divider, ErrorState, LoadingState, Screen, SectionHeader, Segmented } from '../../../shared/ui';
 import { colors, fonts, radius, spacing } from '../../../shared/theme';
 import { Invitation } from '../../../shared/types/domain';
 import { formatDate } from '../../../shared/utils/date';
-import { notConnected } from '../../../shared/utils/notConnected';
+import { runAction } from '../../../shared/api/runAction';
 import { useSession } from '../../../app/session/SessionContext';
 import type { RootScreenProps } from '../../../app/navigation/types';
-import { mockInvitations } from '../../../mocks/data';
+import { useCreateInvitationMutation, useGetInvitationsQuery, useRevokeInvitationMutation } from '../api/familyApi';
 import { can } from '../permissions';
 
 export function InviteMemberScreen({ route }: RootScreenProps<'InviteMember'>) {
@@ -18,18 +18,36 @@ export function InviteMemberScreen({ route }: RootScreenProps<'InviteMember'>) {
   const [role, setRole] = useState<Invitation['role']>('MEMBER');
   const [days, setDays] = useState(7);
   const [maxUses, setMaxUses] = useState(5);
-  const invitations = mockInvitations[familyId] ?? [];
+  const invitationsQuery = useGetInvitationsQuery(familyId);
+  const [createInvitation] = useCreateInvitationMutation();
+  const [revokeInvitation] = useRevokeInvitationMutation();
+  const [creating, setCreating] = useState(false);
   const isOwner = !!family && can.changeRoles(family.myRole);
+
+  const create = async () => {
+    setCreating(true);
+    // only the OWNER may hand out ADMIN codes; the backend checks it again
+    await runAction(() => createInvitation({ familyId, role: isOwner ? role : 'MEMBER', maxUses, validDays: days }).unwrap());
+    setCreating(false);
+  };
+
+  if (invitationsQuery.isLoading) {
+    return <LoadingState />;
+  }
+  if (invitationsQuery.isError || !invitationsQuery.data) {
+    return <ErrorState onRetry={invitationsQuery.refetch} />;
+  }
+  const invitations = invitationsQuery.data;
 
   const share = (inv: Invitation) =>
     Share.share({
-      message: `Mời bạn vào "${family?.name}" trên FamilyHub. Mở ứng dụng, chọn Gia đình > Có mã mời và nhập mã ${inv.code} (dùng được đến ${formatDate(inv.expiresAt)}).`,
+      message: `Mời bạn vào "${family?.name}" trên Famora. Mở ứng dụng, chọn Gia đình > Có mã mời và nhập mã ${inv.code} (dùng được đến ${formatDate(inv.expiresAt)}).`,
     });
 
   const revoke = (inv: Invitation) =>
     Alert.alert('Thu hồi mã mời?', `Mã ${inv.code} sẽ không dùng được nữa. Người đã tham gia vẫn ở lại gia đình.`, [
       { text: 'Giữ mã', style: 'cancel' },
-      { text: 'Thu hồi', style: 'destructive', onPress: () => notConnected('Thu hồi mã mời') },
+      { text: 'Thu hồi', style: 'destructive', onPress: () => runAction(() => revokeInvitation({ familyId, invitationId: inv.id }).unwrap()) },
     ]);
 
   return (
@@ -39,7 +57,7 @@ export function InviteMemberScreen({ route }: RootScreenProps<'InviteMember'>) {
       </AppText>
 
       {invitations.map(inv => (
-        <Card key={inv.code} tone="highlight" style={styles.codeCard}>
+        <Card key={inv.id} tone="highlight" style={styles.codeCard}>
           <AppText variant="label" color={colors.highlightText}>
             Mã đang dùng
           </AppText>
@@ -106,8 +124,7 @@ export function InviteMemberScreen({ route }: RootScreenProps<'InviteMember'>) {
               ]}
             />
           </Option>
-          {/* Phase 7: POST /api/families/{familyId}/invitations { role, expiresInDays, maxUses } */}
-          <Button label="Tạo mã mời" onPress={() => notConnected('Tạo mã mời')} />
+          <Button label="Tạo mã mời" onPress={create} loading={creating} />
         </Card>
       </View>
     </Screen>

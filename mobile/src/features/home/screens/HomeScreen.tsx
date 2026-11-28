@@ -1,21 +1,40 @@
 import React, { useCallback, useMemo } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, CalendarDays, CalendarPlus, ChevronRight, Users, Volume2, VolumeX, type LucideIcon } from 'lucide-react-native';
+import {
+  Bell,
+  CalendarDays,
+  CalendarPlus,
+  ChevronRight,
+  Users,
+  Volume2,
+  VolumeX,
+  type LucideIcon,
+} from 'lucide-react-native';
 import { AppText, Avatar, Card, Divider } from '../../../shared/ui';
 import { Candle } from '../../../shared/ui/family/Ambient';
 import { SkyBackground } from '../../../shared/ui/soft/SkyBackground';
 import { Appear } from '../../../shared/ui/soft/Appear';
 import { PressScale } from '../../../shared/ui/soft/PressScale';
 import { stickers, type StickerName } from '../../../shared/ui/soft/art';
-import { colors, fonts, iconSize, moodOf, moods, radius, shadow, spacing } from '../../../shared/theme';
+import {
+  colors,
+  fonts,
+  iconSize,
+  moodOf,
+  moods,
+  radius,
+  shadow,
+  spacing,
+} from '../../../shared/theme';
 import type { DayMood } from '../../../shared/theme';
 import { EventOccurrence, IsoDate } from '../../../shared/types/domain';
 import { diffDays, formatDayMonth, todayVn } from '../../../shared/utils/date';
 import { useSession } from '../../../app/session/SessionContext';
 import type { TabScreenProps } from '../../../app/navigation/types';
 import { formatLunar, lunarOf } from '../../../mocks/lunarMonths';
-import { mockMembers } from '../../../mocks/data';
+import { useGetMembersQuery } from '../../family/api/familyApi';
+import { WelcomeCard } from '../components/WelcomeCard';
 import { EventRow } from '../../calendar/components/EventRow';
 import { eventsOn, upcoming } from '../../calendar/eventQueries';
 import { TearOffSheet, SheetDay } from '../components/TearOffSheet';
@@ -59,33 +78,84 @@ function stickerFor(mood: DayMood, h: number): StickerName | null {
 
 export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
   const insets = useSafeAreaInsets();
-  const { user, activeFamily, unreadCount, soundOn, toggleSound } = useSession();
+  const {
+    user,
+    activeFamily,
+    familiesLoading,
+    unreadCount,
+    soundOn,
+    toggleSound,
+  } = useSession();
   const today = todayVn();
   const h = hourVn();
   const familyId = activeFamily?.id ?? '';
-  const firstName = useMemo(() => user?.fullName.split(' ').pop() ?? '', [user]);
-  const members = mockMembers[familyId] ?? [];
+  const firstName = useMemo(
+    () => user?.fullName.split(' ').pop() ?? '',
+    [user],
+  );
+  const { data: members = [] } = useGetMembersQuery(familyId, {
+    skip: !familyId,
+  });
+  // a brand-new account belongs to no family yet: welcome them instead of showing an empty family card
+  const noFamily = !familiesLoading && !activeFamily;
 
   const getDay = useCallback(
-    (date: IsoDate): SheetDay => ({ date, lunar: lunarOf(date), events: eventsOn(familyId, date) }),
+    (date: IsoDate): SheetDay => ({
+      date,
+      lunar: lunarOf(date),
+      events: eventsOn(familyId, date),
+    }),
     [familyId],
   );
   const mood = moodOf(eventsOn(familyId, today).map(e => e.type));
   const sticker = stickerFor(mood, h);
   const nextMemorial = upcoming(familyId, today, 120, ['DEATH_ANNIVERSARY'])[0];
-  const others = upcoming(familyId, today, 30).filter(e => e.type !== 'DEATH_ANNIVERSARY').slice(0, 3);
-  const open = (e: EventOccurrence) => navigation.navigate('EventDetail', { eventId: e.eventId, date: e.date });
+  const others = upcoming(familyId, today, 30)
+    .filter(e => e.type !== 'DEATH_ANNIVERSARY')
+    .slice(0, 3);
+  const open = (e: EventOccurrence) =>
+    navigation.navigate('EventDetail', { eventId: e.eventId, date: e.date });
 
   const actions: QuickActionProps[] = [
-    { icon: CalendarDays, label: 'Lịch\ncả nhà', tint: colors.primary, soft: colors.primarySoft, onPress: () => navigation.navigate('Calendar') },
-    { icon: Users, label: 'Thành\nviên', tint: colors.primaryDeep, soft: '#E4ECFB', onPress: () => navigation.navigate('FamilyMembers', { familyId }) },
-    { icon: Bell, label: 'Nhắc\nnhở', tint: colors.goldText, soft: colors.goldSoft, onPress: () => navigation.navigate('Notifications') },
-    { icon: CalendarPlus, label: 'Thêm\nsự kiện', tint: colors.danger, soft: colors.dangerSoft, onPress: () => navigation.navigate('CreateEvent', { date: today }) },
+    {
+      icon: CalendarDays,
+      label: 'Lịch\ncả nhà',
+      tint: colors.primary,
+      soft: colors.primarySoft,
+      onPress: () => navigation.navigate('Calendar'),
+    },
+    {
+      icon: Users,
+      label: 'Thành\nviên',
+      tint: colors.primaryDeep,
+      soft: '#E4ECFB',
+      onPress: () => navigation.navigate('FamilyMembers', { familyId }),
+    },
+    {
+      icon: Bell,
+      label: 'Nhắc\nnhở',
+      tint: colors.goldText,
+      soft: colors.goldSoft,
+      onPress: () => navigation.navigate('Notifications'),
+    },
+    {
+      icon: CalendarPlus,
+      label: 'Thêm\nsự kiện',
+      tint: colors.danger,
+      soft: colors.dangerSoft,
+      onPress: () => navigation.navigate('CreateEvent', { date: today }),
+    },
   ];
 
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + spacing.md },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <SkyBackground height={460 + insets.top} />
 
         <Appear style={styles.header}>
@@ -94,30 +164,59 @@ export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
             <AppText variant="caption" color={colors.textSecondary}>
               {greeting(h)},
             </AppText>
-            <AppText style={styles.name} accessibilityRole="header" numberOfLines={1}>
+            <AppText
+              style={styles.name}
+              accessibilityRole="header"
+              numberOfLines={1}
+            >
               {firstName}
             </AppText>
           </View>
-          <RoundIcon icon={soundOn ? Volume2 : VolumeX} label={soundOn ? 'Tắt âm thanh' : 'Bật âm thanh'} onPress={toggleSound} muted={!soundOn} />
-          <RoundIcon icon={Bell} label="Thông báo" onPress={() => navigation.navigate('Notifications')} badge={unreadCount} />
-        </Appear>
-
-        <Appear index={1}>
-          <FamilyHero
-            mood={mood}
-            familyName={activeFamily?.name ?? ''}
-            memberCount={activeFamily?.memberCount ?? members.length}
-            members={members}
-            onSwitchFamily={() => navigation.navigate('Main', { screen: 'Families' })}
-            onOpenMembers={() => navigation.navigate('FamilyMembers', { familyId })}
+          <RoundIcon
+            icon={soundOn ? Volume2 : VolumeX}
+            label={soundOn ? 'Tắt âm thanh' : 'Bật âm thanh'}
+            onPress={toggleSound}
+            muted={!soundOn}
+          />
+          <RoundIcon
+            icon={Bell}
+            label="Thông báo"
+            onPress={() => navigation.navigate('Notifications')}
+            badge={unreadCount}
           />
         </Appear>
 
-        <Appear index={2} style={styles.actions}>
-          {actions.map(a => (
-            <QuickAction key={a.label} {...a} />
-          ))}
-        </Appear>
+        {noFamily ? (
+          <Appear index={1}>
+            <WelcomeCard
+              onCreate={() => navigation.navigate('CreateFamily')}
+              onJoin={() => navigation.navigate('Main', { screen: 'Families' })}
+            />
+          </Appear>
+        ) : (
+          <>
+            <Appear index={1}>
+              <FamilyHero
+                mood={mood}
+                familyName={activeFamily?.name ?? ''}
+                memberCount={activeFamily?.memberCount ?? members.length}
+                members={members}
+                onSwitchFamily={() =>
+                  navigation.navigate('Main', { screen: 'Families' })
+                }
+                onOpenMembers={() =>
+                  navigation.navigate('FamilyMembers', { familyId })
+                }
+              />
+            </Appear>
+
+            <Appear index={2} style={styles.actions}>
+              {actions.map(a => (
+                <QuickAction key={a.label} {...a} />
+              ))}
+            </Appear>
+          </>
+        )}
 
         <Appear index={3} style={styles.sectionHead}>
           <View style={styles.flex}>
@@ -129,7 +228,13 @@ export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
             </AppText>
           </View>
           {sticker && (
-            <Image source={stickers[sticker]} style={styles.sticker} resizeMode="contain" accessibilityElementsHidden importantForAccessibility="no" />
+            <Image
+              source={stickers[sticker]}
+              style={styles.sticker}
+              resizeMode="contain"
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           )}
         </Appear>
         <Appear index={4} style={styles.sheet}>
@@ -138,15 +243,28 @@ export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
 
         {nextMemorial && (
           <Appear index={5}>
-            <MemorialCard event={nextMemorial} today={today} onPress={() => open(nextMemorial)} />
+            <MemorialCard
+              event={nextMemorial}
+              today={today}
+              onPress={() => open(nextMemorial)}
+            />
           </Appear>
         )}
 
         <Appear index={6} style={styles.sectionHead}>
-          <AppText variant="title" accessibilityRole="header" style={styles.flex}>
+          <AppText
+            variant="title"
+            accessibilityRole="header"
+            style={styles.flex}
+          >
             Sắp tới trong nhà
           </AppText>
-          <PressScale onPress={() => navigation.navigate('Calendar')} accessibilityRole="link" hitSlop={10} style={styles.link}>
+          <PressScale
+            onPress={() => navigation.navigate('Calendar')}
+            accessibilityRole="link"
+            hitSlop={10}
+            style={styles.link}
+          >
             <AppText variant="label" color={colors.primary}>
               Mở lịch
             </AppText>
@@ -156,7 +274,11 @@ export function HomeScreen({ navigation }: TabScreenProps<'Home'>) {
         <Appear index={7}>
           <Card style={styles.list}>
             {others.length === 0 ? (
-              <AppText variant="body" color={colors.textSecondary} style={styles.empty}>
+              <AppText
+                variant="body"
+                color={colors.textSecondary}
+                style={styles.empty}
+              >
                 Không có sự kiện nào trong 30 ngày tới.
               </AppText>
             ) : (
@@ -183,9 +305,21 @@ interface QuickActionProps {
 }
 
 /** One of the four shortcuts under the family card. */
-function QuickAction({ icon: Icon, label, tint, soft, onPress }: QuickActionProps) {
+function QuickAction({
+  icon: Icon,
+  label,
+  tint,
+  soft,
+  onPress,
+}: QuickActionProps) {
   return (
-    <PressScale onPress={onPress} depth={0.93} accessibilityRole="button" accessibilityLabel={label.replace('\n', ' ')} style={styles.action}>
+    <PressScale
+      onPress={onPress}
+      depth={0.93}
+      accessibilityRole="button"
+      accessibilityLabel={label.replace('\n', ' ')}
+      style={styles.action}
+    >
       <View style={[styles.actionIcon, { backgroundColor: soft }]}>
         <Icon size={22} color={tint} strokeWidth={2.2} />
       </View>
@@ -205,14 +339,35 @@ interface RoundIconProps {
 }
 
 /** A white round button for the header; 48 dp, with a badge for unread counts. */
-function RoundIcon({ icon: Icon, label, onPress, badge = 0, muted }: RoundIconProps) {
+function RoundIcon({
+  icon: Icon,
+  label,
+  onPress,
+  badge = 0,
+  muted,
+}: RoundIconProps) {
   const has = badge > 0;
   return (
-    <PressScale onPress={onPress} depth={0.9} accessibilityRole="button" accessibilityLabel={has ? `${label}, ${badge} chưa đọc` : label} style={styles.round}>
-      <Icon size={iconSize.md} color={muted ? colors.textSecondary : colors.primary} strokeWidth={2} />
+    <PressScale
+      onPress={onPress}
+      depth={0.9}
+      accessibilityRole="button"
+      accessibilityLabel={has ? `${label}, ${badge} chưa đọc` : label}
+      style={styles.round}
+    >
+      <Icon
+        size={iconSize.md}
+        color={muted ? colors.textSecondary : colors.primary}
+        strokeWidth={2}
+      />
       {has && (
-        <View style={styles.badge} importantForAccessibility="no-hide-descendants">
-          <AppText style={styles.badgeText}>{badge > 9 ? '9+' : String(badge)}</AppText>
+        <View
+          style={styles.badge}
+          importantForAccessibility="no-hide-descendants"
+        >
+          <AppText style={styles.badgeText}>
+            {badge > 9 ? '9+' : String(badge)}
+          </AppText>
         </View>
       )}
     </PressScale>
@@ -220,7 +375,15 @@ function RoundIcon({ icon: Icon, label, onPress, badge = 0, muted }: RoundIconPr
 }
 
 /** A calm slate card with a candle: the next ngày giỗ. */
-function MemorialCard({ event, today, onPress }: { event: EventOccurrence; today: IsoDate; onPress: () => void }) {
+function MemorialCard({
+  event,
+  today,
+  onPress,
+}: {
+  event: EventOccurrence;
+  today: IsoDate;
+  onPress: () => void;
+}) {
   const days = diffDays(today, event.date);
   return (
     <PressScale
@@ -238,7 +401,9 @@ function MemorialCard({ event, today, onPress }: { event: EventOccurrence; today
         </AppText>
         <AppText style={styles.memorialTitle}>{event.title}</AppText>
         <AppText variant="caption" color={moods.memorial.onBandMuted}>
-          {`${event.lunar ? formatLunar(event.lunar) : ''} · ${formatDayMonth(event.date)}${event.startTime ? ` · ${event.startTime}` : ''}`}
+          {`${event.lunar ? formatLunar(event.lunar) : ''} · ${formatDayMonth(
+            event.date,
+          )}${event.startTime ? ` · ${event.startTime}` : ''}`}
         </AppText>
       </View>
       <View style={styles.countdown}>
@@ -251,10 +416,19 @@ function MemorialCard({ event, today, onPress }: { event: EventOccurrence; today
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+    gap: spacing.lg,
+  },
   flex: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  name: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.text },
+  name: {
+    fontFamily: fonts.display,
+    fontSize: 26,
+    lineHeight: 32,
+    color: colors.text,
+  },
   round: {
     width: 48,
     height: 48,
@@ -276,7 +450,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { fontFamily: fonts.sansSemiBold, fontSize: 11, lineHeight: 14, color: colors.text },
+  badgeText: {
+    fontFamily: fonts.sansSemiBold,
+    fontSize: 11,
+    lineHeight: 14,
+    color: colors.text,
+  },
   actions: { flexDirection: 'row', gap: spacing.md },
   action: {
     flex: 1,
@@ -287,9 +466,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...shadow.card,
   },
-  actionIcon: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  actionLabel: { fontFamily: fonts.sansMedium, fontSize: 13, lineHeight: 17, color: colors.text, textAlign: 'center' },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.sm },
+  actionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    lineHeight: 17,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
   sticker: { width: 64, height: 64 },
   sheet: { marginHorizontal: spacing.xs },
   link: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 44 },
@@ -303,7 +499,12 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   candle: { width: 40, alignItems: 'center' },
-  memorialTitle: { fontFamily: fonts.display, fontSize: 21, lineHeight: 27, color: moods.memorial.onBand },
+  memorialTitle: {
+    fontFamily: fonts.display,
+    fontSize: 21,
+    lineHeight: 27,
+    color: moods.memorial.onBand,
+  },
   countdown: {
     alignItems: 'center',
     minWidth: 56,
@@ -312,7 +513,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
   },
-  countNum: { fontFamily: fonts.display, fontSize: 22, lineHeight: 26, color: colors.text },
+  countNum: {
+    fontFamily: fonts.display,
+    fontSize: 22,
+    lineHeight: 26,
+    color: colors.text,
+  },
   countLbl: { fontFamily: fonts.sansMedium, fontSize: 11, color: colors.text },
   list: { paddingVertical: spacing.xs },
   empty: { paddingVertical: spacing.md },

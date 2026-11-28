@@ -17,7 +17,9 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
   FamilyDetail: { familyId: string };
   FamilyMembers: { familyId: string };
-  CreateFamily: undefined;
+  /** With familyId: edit that family instead of creating one. */
+  CreateFamily: { familyId?: string } | undefined;
+  AddPerson: { familyId: string };
   InviteMember: { familyId: string };
   EventDetail: { eventId: string; date: IsoDate };
   CreateEvent: { date?: IsoDate } | undefined;

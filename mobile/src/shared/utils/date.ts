@@ -87,3 +87,8 @@ export function relativeDays(from: IsoDate, to: IsoDate): string {
   }
   return `${-n} ngày trước`;
 }
+
+/** A server timestamp (ISO instant, UTC) as the Vietnam calendar date it falls on. */
+export function instantToVnDate(instant: string): IsoDate {
+  return new Date(Date.parse(instant) + 7 * 3600 * 1000).toISOString().slice(0, 10);
+}

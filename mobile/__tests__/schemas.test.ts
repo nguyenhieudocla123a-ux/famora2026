@@ -59,3 +59,22 @@ describe('form validation', () => {
     expect(createEventSchema.safeParse({ ...validEvent, startTime: '9h' }).success).toBe(false);
   });
 });
+
+describe('personSchema (Thêm người thân)', () => {
+  const { personSchema } = require('../src/features/family/schemas');
+  const base = { fullName: 'Phạm Thị Hòa', nickname: 'Bà nội', deceased: true, deathLunarDay: '21', deathLunarMonth: '10', createAnniversary: true };
+
+  test('accepts a lunar death date', () => {
+    expect(personSchema.safeParse(base).success).toBe(true);
+  });
+
+  test('accepts no date at all (an elder whose giỗ is not known yet)', () => {
+    expect(personSchema.safeParse({ ...base, deathLunarDay: '', deathLunarMonth: '' }).success).toBe(true);
+  });
+
+  test('refuses a day without a month, day 31, month 13', () => {
+    expect(personSchema.safeParse({ ...base, deathLunarMonth: '' }).success).toBe(false);
+    expect(personSchema.safeParse({ ...base, deathLunarDay: '31' }).success).toBe(false);
+    expect(personSchema.safeParse({ ...base, deathLunarMonth: '13' }).success).toBe(false);
+  });
+});

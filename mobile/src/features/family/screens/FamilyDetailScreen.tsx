@@ -4,7 +4,8 @@ import { CalendarDays, LogOut, Pencil, Trash2, UserPlus, Users } from 'lucide-re
 import { AppText, Button, Card, Divider, EmptyState, ListRow, RoleBadge, Screen, SectionHeader } from '../../../shared/ui';
 import { colors, iconSize, spacing } from '../../../shared/theme';
 import { todayVn } from '../../../shared/utils/date';
-import { notConnected } from '../../../shared/utils/notConnected';
+import { runAction } from '../../../shared/api/runAction';
+import { useDissolveFamilyMutation, useLeaveFamilyMutation } from '../api/familyApi';
 import { useSession } from '../../../app/session/SessionContext';
 import type { RootScreenProps } from '../../../app/navigation/types';
 import { EventRow } from '../../calendar/components/EventRow';
@@ -14,6 +15,8 @@ import { can } from '../permissions';
 export function FamilyDetailScreen({ route, navigation }: RootScreenProps<'FamilyDetail'>) {
   const { families, setActiveFamily } = useSession();
   const family = families.find(f => f.id === route.params.familyId);
+  const [leaveFamily] = useLeaveFamilyMutation();
+  const [dissolveFamily] = useDissolveFamilyMutation();
 
   if (!family) {
     return (
@@ -38,19 +41,31 @@ export function FamilyDetailScreen({ route, navigation }: RootScreenProps<'Famil
     navigation.navigate('Main', { screen: 'Calendar' });
   };
 
+  // after leaving or dissolving, the family list reloads (cache tag) and we go back to it
+  const leave = async () => {
+    if (await runAction(() => leaveFamily(family.id).unwrap().then(() => true))) {
+      navigation.navigate('Main', { screen: 'Families' });
+    }
+  };
+  const dissolve = async () => {
+    if (await runAction(() => dissolveFamily(family.id).unwrap().then(() => true))) {
+      navigation.navigate('Main', { screen: 'Families' });
+    }
+  };
+
   const confirmLeave = () =>
     Alert.alert('Rời gia đình?', `Bạn sẽ không còn thấy lịch và nhận nhắc nhở của ${family.name}.`, [
       { text: 'Ở lại', style: 'cancel' },
-      { text: 'Rời gia đình', style: 'destructive', onPress: () => notConnected('Rời gia đình') },
+      { text: 'Rời gia đình', style: 'destructive', onPress: leave },
     ]);
 
   const confirmDisband = () =>
     Alert.alert(
       'Giải tán gia đình?',
-      `Mọi thành viên sẽ mất quyền xem lịch của ${family.name}. Dữ liệu được giữ 30 ngày để khôi phục nếu bạn đổi ý.`,
+      `Mọi thành viên sẽ mất quyền xem lịch của ${family.name}. Lịch sử vẫn được lưu trên máy chủ.`,
       [
         { text: 'Giữ gia đình', style: 'cancel' },
-        { text: 'Giải tán', style: 'destructive', onPress: () => notConnected('Giải tán gia đình') },
+        { text: 'Giải tán', style: 'destructive', onPress: dissolve },
       ],
     );
 
@@ -104,7 +119,7 @@ export function FamilyDetailScreen({ route, navigation }: RootScreenProps<'Famil
             <ListRow
               title="Sửa thông tin gia đình"
               leading={<Pencil size={iconSize.md} color={colors.primary} />}
-              onPress={() => notConnected('Sửa thông tin gia đình')}
+              onPress={() => navigation.navigate('CreateFamily', { familyId: family.id })}
             />
           </>
         )}

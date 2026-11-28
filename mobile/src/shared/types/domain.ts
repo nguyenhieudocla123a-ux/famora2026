@@ -60,6 +60,8 @@ export interface FamilyPerson {
   isDeceased: boolean;
   deathLunar?: { day: number; month: number };
   memberId?: string;
+  /** Next ngay gio from today, computed by the server. */
+  nextAnniversary?: IsoDate;
 }
 
 /** One concrete occurrence of an event on a solar date (recurring events expand into many). */
@@ -92,6 +94,7 @@ export interface AppNotification {
 }
 
 export interface Invitation {
+  id: string;
   code: string;
   role: Exclude<FamilyRole, 'OWNER'>;
   expiresAt: IsoDate;

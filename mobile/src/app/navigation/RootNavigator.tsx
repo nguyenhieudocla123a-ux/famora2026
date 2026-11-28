@@ -9,6 +9,7 @@ import { FamilyDetailScreen } from '../../features/family/screens/FamilyDetailSc
 import { FamilyMembersScreen } from '../../features/family/screens/FamilyMembersScreen';
 import { CreateFamilyScreen } from '../../features/family/screens/CreateFamilyScreen';
 import { InviteMemberScreen } from '../../features/family/screens/InviteMemberScreen';
+import { AddPersonScreen } from '../../features/family/screens/AddPersonScreen';
 import { EventDetailScreen } from '../../features/calendar/screens/EventDetailScreen';
 import { CreateEventScreen } from '../../features/calendar/screens/CreateEventScreen';
 import { NotificationCenterScreen, renderMarkAllRead } from '../../features/notification/screens/NotificationCenterScreen';
@@ -59,6 +60,7 @@ export function RootNavigator() {
           <Stack.Screen name="FamilyMembers" component={FamilyMembersScreen} options={{ title: 'Thành viên' }} />
           <Stack.Screen name="CreateFamily" component={CreateFamilyScreen} options={{ title: 'Tạo gia đình' }} />
           <Stack.Screen name="InviteMember" component={InviteMemberScreen} options={{ title: 'Mời người thân' }} />
+          <Stack.Screen name="AddPerson" component={AddPersonScreen} options={{ title: 'Thêm người thân' }} />
           <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Chi tiết sự kiện' }} />
           <Stack.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: 'Thêm sự kiện' }} />
           <Stack.Screen name="Notifications" component={NotificationCenterScreen} options={{ title: 'Thông báo', headerRight: renderMarkAllRead }} />

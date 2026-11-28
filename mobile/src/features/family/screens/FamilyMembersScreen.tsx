@@ -4,52 +4,90 @@ import { Flame, MoreVertical, UserPlus } from 'lucide-react-native';
 import { AppText, Avatar, Button, Card, Divider, ErrorState, IconButton, ListRow, LoadingState, RoleBadge, Screen, SectionHeader } from '../../../shared/ui';
 import { colors, eventTypeStyles, spacing } from '../../../shared/theme';
 import { FamilyMember } from '../../../shared/types/domain';
-import { formatDate } from '../../../shared/utils/date';
-import { notConnected } from '../../../shared/utils/notConnected';
+import { formatDate, formatDayMonth } from '../../../shared/utils/date';
+import { runAction } from '../../../shared/api/runAction';
 import { useSession } from '../../../app/session/SessionContext';
 import type { RootScreenProps } from '../../../app/navigation/types';
-import { mockMembers, mockPersons } from '../../../mocks/data';
-import { useMockResource } from '../../../mocks/useMockResource';
 import { can } from '../permissions';
+import {
+  useChangeRoleMutation,
+  useGetMembersQuery,
+  useGetPersonsQuery,
+  useRemoveMemberMutation,
+  useTransferOwnershipMutation,
+} from '../api/familyApi';
 
 export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'FamilyMembers'>) {
   const { familyId } = route.params;
   const { families, user } = useSession();
   const family = families.find(f => f.id === familyId);
-  const { status, data, reload } = useMockResource(() => ({
-    members: mockMembers[familyId] ?? [],
-    persons: mockPersons[familyId] ?? [],
-  }));
+  const members = useGetMembersQuery(familyId);
+  const persons = useGetPersonsQuery(familyId);
+  const [changeRole] = useChangeRoleMutation();
+  const [removeMember] = useRemoveMemberMutation();
+  const [transferOwnership] = useTransferOwnershipMutation();
 
-  if (status === 'loading') {
+  if (members.isLoading || persons.isLoading) {
     return <LoadingState />;
   }
-  if (status === 'error' || !data || !family) {
-    return <ErrorState onRetry={reload} />;
+  if (members.isError || persons.isError || !members.data || !persons.data || !family) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          members.refetch();
+          persons.refetch();
+        }}
+      />
+    );
   }
 
   const myRole = family.myRole;
-  const deceased = data.persons.filter(p => p.isDeceased);
-  const relatives = data.persons.filter(p => !p.isDeceased && !p.memberId);
+  const deceased = persons.data.filter(p => p.isDeceased);
+  const relatives = persons.data.filter(p => !p.isDeceased && !p.memberId);
+
+  const confirm = (title: string, body: string, action: string, run: () => void) =>
+    Alert.alert(title, body, [
+      { text: 'Thôi', style: 'cancel' },
+      { text: action, style: 'destructive', onPress: run },
+    ]);
 
   const manage = (m: FamilyMember) => {
+    const name = m.nickname ?? m.fullName;
     const options: { label: string; run: () => void; destructive?: boolean }[] = [];
     if (can.changeRoles(myRole) && m.role !== 'OWNER') {
-      options.push(
-        m.role === 'MEMBER'
-          ? { label: 'Đặt làm quản trị', run: () => notConnected('Đổi vai trò') }
-          : { label: 'Chuyển về thành viên', run: () => notConnected('Đổi vai trò') },
-      );
-      options.push({ label: 'Chuyển quyền chủ nhà', run: () => notConnected('Chuyển quyền chủ nhà') });
+      const next = m.role === 'MEMBER' ? 'ADMIN' : 'MEMBER';
+      options.push({
+        label: next === 'ADMIN' ? 'Đặt làm quản trị' : 'Chuyển về thành viên',
+        run: () => runAction(() => changeRole({ familyId, memberId: m.id, role: next }).unwrap()),
+      });
+      options.push({
+        label: 'Chuyển quyền chủ nhà',
+        run: () =>
+          confirm(
+            'Chuyển quyền chủ nhà?',
+            `${name} sẽ thành chủ nhà; bạn trở thành quản trị viên. Chỉ chủ nhà mới chuyển lại được.`,
+            'Chuyển quyền',
+            () => runAction(() => transferOwnership({ familyId, memberId: m.id }).unwrap()),
+          ),
+      });
     }
     if (can.removeMember(myRole, m.role)) {
-      options.push({ label: 'Mời ra khỏi gia đình', destructive: true, run: () => notConnected('Xóa thành viên') });
+      options.push({
+        label: 'Mời ra khỏi gia đình',
+        destructive: true,
+        run: () =>
+          confirm(
+            `Mời ${name} ra khỏi gia đình?`,
+            'Họ sẽ không còn thấy lịch và nhận nhắc nhở của gia đình. Có thể mời lại bằng mã mời mới.',
+            'Mời ra',
+            () => runAction(() => removeMember({ familyId, memberId: m.id }).unwrap()),
+          ),
+      });
     }
-    const title = m.nickname ?? m.fullName;
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          title,
+          title: name,
           options: [...options.map(o => o.label), 'Đóng'],
           cancelButtonIndex: options.length,
           destructiveButtonIndex: options.findIndex(o => o.destructive),
@@ -57,7 +95,7 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
         i => options[i]?.run(),
       );
     } else {
-      Alert.alert(title, undefined, [
+      Alert.alert(name, undefined, [
         ...options.map(o => ({ text: o.label, style: o.destructive ? ('destructive' as const) : ('default' as const), onPress: o.run })),
         { text: 'Đóng', style: 'cancel' as const },
       ]);
@@ -67,9 +105,9 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
   return (
     <Screen>
       <View style={styles.section}>
-        <SectionHeader title={`Thành viên (${data.members.length})`} />
+        <SectionHeader title={`Thành viên (${members.data.length})`} />
         <Card style={styles.listCard}>
-          {data.members.map((m, i) => {
+          {members.data.map((m, i) => {
             const isMe = m.userId === user?.id;
             const manageable = !isMe && (can.changeRoles(myRole) || can.removeMember(myRole, m.role));
             return (
@@ -78,7 +116,7 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
                 <ListRow
                   title={`${m.nickname ?? m.fullName}${isMe ? ' (bạn)' : ''}`}
                   subtitle={m.nickname ? m.fullName : `Tham gia ${formatDate(m.joinedAt)}`}
-                  leading={<Avatar name={m.fullName} nickname={m.nickname} face={isMe ? "bo" : undefined} />}
+                  leading={<Avatar name={m.fullName} nickname={m.nickname} />}
                   trailing={
                     <View style={styles.trailing}>
                       <RoleBadge role={m.role} />
@@ -116,7 +154,13 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
                 {i > 0 && <Divider />}
                 <ListRow
                   title={p.nickname ?? p.fullName}
-                  subtitle={`${p.fullName}${p.deathLunar ? ` · giỗ ${p.deathLunar.day}/${p.deathLunar.month} âm` : ''}`}
+                  subtitle={[
+                    p.nickname ? p.fullName : null,
+                    p.deathLunar ? `giỗ ${p.deathLunar.day}/${p.deathLunar.month} âm` : null,
+                    p.nextAnniversary ? `lần tới ${formatDayMonth(p.nextAnniversary)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                   leading={<Avatar name={p.fullName} nickname={p.nickname} />}
                 />
               </View>
@@ -140,7 +184,7 @@ export function FamilyMembersScreen({ route, navigation }: RootScreenProps<'Fami
       )}
 
       {can.managePersons(myRole) && (
-        <Button label="Thêm người thân" variant="ghost" onPress={() => notConnected('Thêm người thân')} />
+        <Button label="Thêm người thân" variant="ghost" onPress={() => navigation.navigate('AddPerson', { familyId })} />
       )}
       <AppText variant="caption" color={colors.textSecondary} align="center">
         Chỉ chủ nhà đổi được vai trò thành viên.

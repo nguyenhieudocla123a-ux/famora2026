@@ -10,7 +10,6 @@ import {
   FamilyMember,
   FamilyPerson,
   FamilySummary,
-  Invitation,
   IsoDate,
   UserProfile,
 } from '../shared/types/domain';
@@ -63,11 +62,6 @@ export const mockPersons: Record<string, FamilyPerson[]> = {
     { id: 'p3', fullName: 'Nguyễn Minh An', nickname: 'Bé An', isDeceased: false },
     { id: 'p4', fullName: 'Trần Thị Lan', nickname: 'Mẹ', isDeceased: false, memberId: 'm3' },
   ],
-  f2: [],
-};
-
-export const mockInvitations: Record<string, Invitation[]> = {
-  f1: [{ code: 'K7MQ2XHP', role: 'MEMBER', expiresAt: '2026-12-03', maxUses: 5, usedCount: 2 }],
   f2: [],
 };
 

@@ -1,27 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle2, KeyRound, Plus, Users } from 'lucide-react-native';
-import { AppText, Button, Card, EmptyState, RoleBadge, SectionHeader, TextField } from '../../../shared/ui';
+import { AppText, Button, Card, EmptyState, LoadingState, RoleBadge, SectionHeader, TextField } from '../../../shared/ui';
 import { colors, iconSize, spacing } from '../../../shared/theme';
-import { notConnected } from '../../../shared/utils/notConnected';
+import { runAction } from '../../../shared/api/runAction';
+import { useJoinFamilyMutation } from '../api/familyApi';
 import { useSession } from '../../../app/session/SessionContext';
 import type { TabScreenProps } from '../../../app/navigation/types';
 import { JoinForm, joinSchema } from '../schemas';
 
 export function FamilyListScreen({ navigation }: TabScreenProps<'Families'>) {
-  const { families, activeFamily, setActiveFamily } = useSession();
-  const { control, handleSubmit, formState, reset } = useForm<JoinForm>({
+  const { families, familiesLoading, activeFamily, setActiveFamily } = useSession();
+  const [joinFamily] = useJoinFamilyMutation();
+  const [joining, setJoining] = useState(false);
+  const { control, handleSubmit, formState, reset, setError } = useForm<JoinForm>({
     resolver: zodResolver(joinSchema),
     defaultValues: { code: '' },
   });
 
-  // Phase 7: POST /api/families/join { code }
-  const onJoin = handleSubmit(() => {
-    notConnected('Tham gia gia đình');
-    reset();
+  // POST /api/families/join: a wrong, used-up or expired code shows its message under the field
+  const onJoin = handleSubmit(async ({ code }) => {
+    setJoining(true);
+    const joined = await runAction(
+      () => joinFamily({ code }).unwrap(),
+      e => {
+        if (e.code === 'INVITATION_INVALID' || e.code === 'ALREADY_MEMBER') {
+          setError('code', { message: e.message });
+          return true;
+        }
+        return false;
+      },
+    );
+    setJoining(false);
+    if (joined) {
+      reset();
+      setActiveFamily(joined.id);
+      navigation.navigate('FamilyDetail', { familyId: joined.id });
+    }
   });
 
   return (
@@ -31,7 +49,9 @@ export function FamilyListScreen({ navigation }: TabScreenProps<'Families'>) {
           Gia đình của bạn
         </AppText>
 
-        {families.length === 0 ? (
+        {familiesLoading ? (
+          <LoadingState />
+        ) : families.length === 0 ? (
           <EmptyState
             icon={Users}
             title="Bạn chưa ở gia đình nào"
@@ -104,7 +124,7 @@ export function FamilyListScreen({ navigation }: TabScreenProps<'Families'>) {
                 />
               )}
             />
-            <Button label="Tham gia gia đình" variant="secondary" onPress={onJoin} />
+            <Button label="Tham gia gia đình" variant="secondary" onPress={onJoin} loading={joining} />
           </Card>
         </View>
       </ScrollView>
