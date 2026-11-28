@@ -22,6 +22,44 @@ export interface ApiClient {
   onSessionExpired: (handler: () => void) => void;
   /** Stores a new pair: access token in memory, refresh token in the secure store. */
   saveTokens: (pair: TokenPair) => Promise<void>;
+  /**
+   * An access token good for at least another minute, refreshing first if needed. For callers outside Axios
+   * (the STOMP connection). Rejects when the session cannot be renewed.
+   */
+  freshAccessToken: () => Promise<string>;
+}
+
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+/** Decodes base64url to text; a JWT payload is plain ASCII JSON, so bytes map straight to characters. */
+function decodeBase64Url(input: string): string {
+  let bits = 0;
+  let value = 0;
+  let out = '';
+  for (const ch of input) {
+    const v = B64.indexOf(ch);
+    if (v < 0) {
+      throw new Error('not base64url');
+    }
+    value = value * 64 + v;
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      out += String.fromCharCode(Math.floor(value / 2 ** bits));
+      value %= 2 ** bits; // keep only the bits not yet used
+    }
+  }
+  return out;
+}
+
+/** Seconds until a JWT expires; 0 when it cannot be read (treat as expired). */
+export function secondsLeft(token: string, nowMs = Date.now()): number {
+  try {
+    const payload = JSON.parse(decodeBase64Url(token.split('.')[1]));
+    return typeof payload.exp === 'number' ? payload.exp - nowMs / 1000 : 0;
+  } catch {
+    return 0;
+  }
 }
 
 /**
@@ -85,12 +123,30 @@ export function createApiClient(options: { baseURL?: string; adapter?: AxiosAdap
     }
   });
 
+  const freshAccessToken = async (): Promise<string> => {
+    const token = tokenStore.getAccess();
+    if (token && secondsLeft(token) > 60) {
+      return token;
+    }
+    try {
+      return await refreshAccess();
+    } catch (e) {
+      // a refused refresh (401) ends the session; a network error just fails this attempt
+      if (axios.isAxiosError(e) && e.response?.status === 401) {
+        await tokenStore.clear();
+        expiredHandler();
+      }
+      throw e;
+    }
+  };
+
   return {
     http,
     onSessionExpired: handler => {
       expiredHandler = handler;
     },
     saveTokens,
+    freshAccessToken,
   };
 }
 

@@ -1,6 +1,7 @@
 package com.famora.notification;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +40,10 @@ public class Notification {
     @Column(name = "ref_id", updatable = false)
     private Long refId;
 
+    /** For a reminder: the occurrence date it is about. */
+    @Column(name = "ref_date", updatable = false)
+    private LocalDate refDate;
+
     @Column(name = "read_at")
     private Instant readAt;
 
@@ -49,7 +54,7 @@ public class Notification {
     }
 
     Notification(Long userId, Long familyId, String type, String title, String body, String refType, Long refId,
-            Instant createdAt) {
+            LocalDate refDate, Instant createdAt) {
         this.userId = userId;
         this.familyId = familyId;
         this.type = type;
@@ -57,6 +62,7 @@ public class Notification {
         this.body = body;
         this.refType = refType;
         this.refId = refId;
+        this.refDate = refDate;
         this.createdAt = createdAt;
     }
 
@@ -96,6 +102,10 @@ public class Notification {
 
     public Long getRefId() {
         return refId;
+    }
+
+    public LocalDate getRefDate() {
+        return refDate;
     }
 
     public Instant getReadAt() {

@@ -1,11 +1,12 @@
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { Bell, BellRing } from 'lucide-react-native';
-import { AppText, Button, EmptyState } from '../../../shared/ui';
+import { AppText, Button, EmptyState, ErrorState, LoadingState } from '../../../shared/ui';
 import { colors, iconSize, radius, spacing } from '../../../shared/theme';
 import { AppNotification } from '../../../shared/types/domain';
 import { useSession } from '../../../app/session/SessionContext';
 import type { RootScreenProps } from '../../../app/navigation/types';
+import { useGetNotificationsQuery, useMarkAllReadMutation, useMarkReadMutation } from '../api/notificationApi';
 
 function timeAgo(iso: string): string {
   const diffMin = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -25,31 +26,52 @@ function timeAgo(iso: string): string {
 
 /** Header action; shown only while something is unread. */
 function MarkAllReadButton() {
-  const { unreadCount, markAllRead } = useSession();
+  const { unreadCount } = useSession();
+  const [markAllRead] = useMarkAllReadMutation();
   if (unreadCount === 0) {
     return null;
   }
-  return <Button label="Đọc hết" variant="ghost" onPress={markAllRead} style={styles.headerBtn} />;
+  return <Button label="Đọc hết" variant="ghost" onPress={() => markAllRead()} style={styles.headerBtn} />;
 }
 
 /** Passed to the stack's `headerRight` option (kept at module level so it is a stable component). */
 export const renderMarkAllRead = () => <MarkAllReadButton />;
 
 export function NotificationCenterScreen({ navigation }: RootScreenProps<'Notifications'>) {
-  const { notifications, markRead } = useSession();
+  const { families, activeFamily, setActiveFamily } = useSession();
+  // new items arrive by STOMP (useNotificationSocket), which refetches this list
+  const { data, isLoading, isError, refetch, isFetching } = useGetNotificationsQuery();
+  const [markRead] = useMarkReadMutation();
+  const notifications = data?.items ?? [];
 
-  // Phase 7: list from GET /api/notifications, live items from STOMP /user/queue/notifications,
-  // markRead → PUT /api/notifications/{id}/read.
   const open = (n: AppNotification) => {
-    markRead(n.id);
-    if (n.eventId && n.eventDate) {
-      navigation.navigate('EventDetail', { eventId: n.eventId, date: n.eventDate });
+    if (!n.read) {
+      markRead(n.id);
     }
+    if (!n.eventId || !n.eventDate) {
+      return;
+    }
+    // the event screen reads the active family: switch to the notification's family if it is still ours
+    if (n.familyId && n.familyId !== activeFamily?.id) {
+      if (!families.some(f => f.id === n.familyId)) {
+        return;
+      }
+      setActiveFamily(n.familyId);
+    }
+    navigation.navigate('EventDetail', { eventId: n.eventId, date: n.eventDate });
   };
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
+  if (isError && !data) {
+    return <ErrorState onRetry={refetch} />;
+  }
 
   return (
     <FlatList
       style={styles.root}
+      refreshControl={<RefreshControl refreshing={isFetching && !isLoading} onRefresh={() => { refetch(); }} colors={[colors.accent]} />}
       contentContainerStyle={notifications.length === 0 ? styles.emptyContent : styles.content}
       data={notifications}
       keyExtractor={n => n.id}

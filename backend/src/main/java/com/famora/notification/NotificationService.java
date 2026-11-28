@@ -2,6 +2,7 @@ package com.famora.notification;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,8 +38,15 @@ public class NotificationService {
     @Transactional
     public NotificationView create(long userId, Long familyId, String type, String title, String body,
             String refType, Long refId) {
+        return create(userId, familyId, type, title, body, refType, refId, null);
+    }
+
+    /** As above, with the day the notification is about (a reminder's occurrence date). */
+    @Transactional
+    public NotificationView create(long userId, Long familyId, String type, String title, String body,
+            String refType, Long refId, LocalDate refDate) {
         Notification saved = notifications.save(new Notification(userId, familyId, type, title, body, refType, refId,
-                Instant.now(clock)));
+                refDate, Instant.now(clock)));
         NotificationView view = NotificationView.of(saved);
         publisher.publishEvent(new NotificationCreated(userId, view));
         return view;
@@ -78,11 +86,11 @@ public class NotificationService {
     }
 
     public record NotificationView(Long id, Long familyId, String type, String title, String body, String refType,
-            Long refId, boolean read, Instant createdAt) {
+            Long refId, LocalDate refDate, boolean read, Instant createdAt) {
 
         static NotificationView of(Notification n) {
             return new NotificationView(n.getId(), n.getFamilyId(), n.getType(), n.getTitle(), n.getBody(),
-                    n.getRefType(), n.getRefId(), n.getReadAt() != null, n.getCreatedAt());
+                    n.getRefType(), n.getRefId(), n.getRefDate(), n.getReadAt() != null, n.getCreatedAt());
         }
     }
 

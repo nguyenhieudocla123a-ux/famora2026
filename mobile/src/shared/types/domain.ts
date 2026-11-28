@@ -112,6 +112,9 @@ export interface CalendarCell {
 
 export interface AppNotification {
   id: string;
+  /** REMINDER for now; the server may add kinds later. */
+  type: string;
+  familyId?: string;
   title: string;
   body: string;
   createdAt: string;

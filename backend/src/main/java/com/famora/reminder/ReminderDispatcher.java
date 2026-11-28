@@ -59,7 +59,8 @@ public class ReminderDispatcher {
             }
             EventSnapshot e = event.get();
             notifications.create(r.getUserId(), e.familyId(), "REMINDER", e.title(),
-                    body(r.getOffsetDays(), r.getOccurrenceDate(), e), "EVENT", e.id());
+                    body(r.getOffsetDays(), r.getOccurrenceDate(), e), "EVENT", e.id(),
+                    r.getOccurrenceDate());
             r.markSent(now);
             sent++;
         }

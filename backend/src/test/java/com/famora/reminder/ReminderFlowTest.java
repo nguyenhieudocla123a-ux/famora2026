@@ -108,6 +108,7 @@ class ReminderFlowTest extends IntegrationTest {
                 .andExpect(jsonPath("$.items[0].title").value("Họp mặt gia đình"))
                 .andExpect(jsonPath("$.items[0].type").value("REMINDER"))
                 .andExpect(jsonPath("$.items[0].refId").value(eventId))
+                .andExpect(jsonPath("$.items[0].refDate").value(today.plusDays(10).toString()))
                 .andExpect(jsonPath("$.items[0].body").value(org.hamcrest.Matchers.startsWith("Còn 7 ngày: ")))
                 .andExpect(jsonPath("$.items[0].body").value(org.hamcrest.Matchers.endsWith(" lúc 10:00")));
     }
